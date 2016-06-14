@@ -1,88 +1,69 @@
-#include <stdio.h>
-#include <pthread.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <strings.h>
-#include <inttypes.h>
+#include<stdio.h>
+#include<string.h>    //strlen
+#include<sys/socket.h>
+#include<arpa/inet.h> //inet_addr
+#include<unistd.h>    //write
 
-#if 0
-/*
-* Structs exported from in.h
-*/
+int main(int argc , char *argv[])
+{
+    int socket_desc , client_sock , c , read_size;
+    struct sockaddr_in server , client;
+    char client_message[1000];
 
-/* Internet address */
-struct in_addr {
-	unsigned int s_addr;
-};
+    //Create socket
+    socket_desc = socket(AF_INET , SOCK_STREAM , 0);
+    if (socket_desc == -1)
+    {
+        printf("no se pudo crear el socket...\n");
+    }
+    puts("Socket creado\n");
 
-/* Internet style socket address */
-struct sockaddr_in  {
-	unsigned short int sin_family; /* Address family */
-	unsigned short int sin_port;   /* Port number */
-	struct in_addr sin_addr;	 /* IP address */
-	unsigned char sin_zero[...];   /* Pad to size of 'struct sockaddr' */
-};
+    //Prepare the sockaddr_in structure
+    server.sin_family = AF_INET;
+    server.sin_addr.s_addr = INADDR_ANY;
+    server.sin_port = htons( atoi(argv[1]) );
 
-#endif
+    //Bind
+    if( bind(socket_desc,(struct sockaddr *)&server , sizeof(server)) < 0)
+    {
+        //print the error message
+        perror("ERROR, fallo el enlace\n");
+        return 1;
+    }
+    puts("bind done");
 
-int abrir_socket();
-int enlazar_al_puerto( struct sockaddr_in *addr_server, int socket, int puerto);
+    //Listen
+    listen(socket_desc , 3);
 
-int main(int argc, char *argv[]) {
-	struct sockaddr_in server;
-	struct sockaddr_in cliente;
-	int _socket, puerto = -1, _bind, respuesta, optval;
-	socklen_t size;
+    //Accept and incoming connection
+    puts("Waiting for incoming connections...");
+    c = sizeof(struct sockaddr_in);
 
-	puerto = atoi(argv[1]);
-	printf("puerto:%d\n", puerto);
-	_socket = abrir_socket();
-	if( _socket < 0 ){
-		printf("Error al abrir el socket\n");
-		return;
-	}
-	optval = 1;
-	setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR,
-			   (const void *)&optval , sizeof(int));
+    //accept connection from an incoming client
+    client_sock = accept(socket_desc, (struct sockaddr *)&client, (socklen_t*)&c);
+    if (client_sock < 0)
+    {
+        perror("No se acepto la conexion\n");
+        return 1;
+    }
+    puts("Conexion establecida\n");
 
-	server.sin_family = AF_INET;
-	server.sin_addr.s_addr = htons(INADDR_ANY);
-	server.sin_port = htons(puerto);
+    //Receive a message from client
+    while( (read_size = recv(client_sock , client_message , 1000 , 0)) > 0 )
+    {
+        //Send the message back to client
+        write(client_sock , client_message , strlen(client_message));
+    }
 
-	if (bind(_socket, (struct sockaddr*)&server, sizeof(server)) < 0){
-		printf("Error binding socket...");
-		exit(1);
-	}
+    if(read_size == 0)
+    {
+        puts("Cliente desconectado\n");
+        fflush(stdout);
+    }
+    else if(read_size == -1)
+    {
+        perror("recv failed");
+    }
 
-	if( listen(_socket , 3) == -1 ){
-		printf("Error en el listen\n");
-		return;
-	}
-
-	printf("Enlazado al puerto\n");
-	for(;;){
-		size = sizeof(struct sockaddr_in);
-		respuesta = accept(_socket , (struct sockaddr *) &cliente , &size);
-		if(respuesta < 0){
-			printf("Error en accept\n");
-			return;
-		}
-		printf("Se obtuvo una conexion desde %s\n", inet_ntoa(cliente.sin_addr) );
-		send(respuesta,"Bienvenido a mi servidor.\n",25,0);
-		/* mostrara el mensaje de bienvenida al cliente */
-
-		close(respuesta);
-	}
-
-	return 0;
+    return 0;
 }
-
-int abrir_socket(){
-	int s = socket(AF_INET, SOCK_STREAM, 0);
-	return s;
-}
-
-
