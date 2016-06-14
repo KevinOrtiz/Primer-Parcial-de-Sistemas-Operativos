@@ -2,4 +2,6 @@ Para probar el servidor escriban el comando: gcc -o servidor servidor.c
 
 Despues escriban lo siguiente: ./servidor puerto
 
-Abran otra terminal y en esa terminal escriben: telnet 127.0.0.1 puerto
+Para probar el cliente escriban lo siguiente (abren otra terminal): gcc -o cliente cliente.c
+
+Despues escriben lo siguiente: ./cliente ip puerto
