@@ -5,7 +5,8 @@
 
 
 int main(){
-    int valor = validateInput(NULL);
+	char str[] = " get       CLAVE1       valor3";
+    int valor = validateInput(str);
     printf("el valor: %d", valor);
     return 0;
 }
