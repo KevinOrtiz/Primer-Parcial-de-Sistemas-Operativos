@@ -1,23 +1,40 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "client.h"
 
 void toUpper(char* string){
 
-	char * it = string;
-	while(*it!= '\0' ){
-		if(*it >=97 && *it <= 122){
-			*it = *it - 32;
+	while(*string!= '\0' ){
+		if(*string >=97 && *string <= 122){
+			*string = *string - 32;
 		}
-		it++;
+		string++;
 	}
 }
 
 
-int validateInput(char* input){
+
+//retorna un codigo que indica error o exito
+// -1 : error por falta de memoria
+// 1 : exito
+// -2: Error de parsing comando muy grande, mayor que 5 caracteres
+
+
+int cl_validateInput(char* input, char** parameters, int numParams){
     
-    //se guarda el comando
-    char comando[5];
+    //inicializo el arreglo de paremetros
+    int i =0;
+	for(i=0; i< numParams; i++){
+		parameters[i] = NULL;
+	}
+
+    //variable para guardar el comando
+    char* comando;
+    comando = (char*)malloc(sizeof(char)*5);
+    if(!comando){
+    	return -1;
+    }
 	//recorrer y separar por espacios
 	char * token;
 	token = strtok(input," "); // el primer token
@@ -27,19 +44,47 @@ int validateInput(char* input){
 	if(strlen(token)< 5){
 		strcpy(comando, token);
 		toUpper(comando);
-		printf ("comando:%s\n",comando);
+		parameters[0] = comando;
 	}
 	else{
 		//retorna error, comando muy grande
-		return -1;
+		return -2;
 	}
-	
-	while (token != NULL){
-		printf ("%s, %lu\n",token, strlen(token));
+	i = 1;
+	while (i< numParams){
 		token = strtok (NULL, " ");
+		if(token){
+			parameters[i] = token;
+			i++;	
+		}else{
+			break;
+		}
+
 	 }
-	 
-	 
 
     return 1;
+}
+
+
+char* cl_connect(){
+	return NULL;
+}
+
+char* cl_get(char* key){
+	return NULL;
+}
+char* cl_set(char* key, char* value){
+	return NULL;
+}
+char* cl_list(){
+	return NULL;
+
+}
+char* cl_del(char* key){
+	return NULL;
+}
+
+//*******MODIFICAR EXIT*****///
+char* cl_disconnect(){
+	return NULL;
 }
