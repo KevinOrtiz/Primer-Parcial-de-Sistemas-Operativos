@@ -3,6 +3,8 @@
 #include <string.h>
 #include <netdb.h>
 #include <netinet/in.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
 #include "clientLibrary.h"
 
 /*
@@ -37,7 +39,7 @@ int onlykey(char *command){
 //key 128MB
 
 int cl_validateInput(instruction* parameters){
-    
+
     //inicializo el arreglo de paremetros
     int i =0;
     char c;
@@ -53,7 +55,7 @@ int cl_validateInput(instruction* parameters){
     (parameters->command)[i]='\0';
     toUpper(parameters->command);
     while(EOF != (c=fgetc(temp)) && c==' ');//quitar espacion en blanco
-    
+
     if(onlyCommand(parameters->command) && c==EOF)// es instruccion es sin parametros
     	return 1;
     if(onlyCommand(parameters->command))//numero incorrecto de parametros
@@ -70,7 +72,7 @@ int cl_validateInput(instruction* parameters){
     }
     (parameters->key)[i]='\0';
     while(EOF != (c=fgetc(temp)) && c==' ');//quitar espacion en blanco
-    
+
     if(onlykey(parameters->command) && c==EOF)// es instruccion de 1 solo parametro
     	return 1;
     if(onlykey(parameters->command))//numero incorrecto de parametros
@@ -82,9 +84,26 @@ int cl_validateInput(instruction* parameters){
     return 1;
 }
 
+/*
+ * Esta funcion retorna un entero que me indica si el proceso para crear el socket fue exitoso
+ * Retorna -1: error de creacion del socket
+ * Retorna  0: error de conexion
+ * Retorna > 0: el socket se creo con exito
+ */
+int cl_connect(char *argv[]){
+    int sock;
+    struct sockaddr_in server;
+    sock = socket(AF_INET , SOCK_STREAM , 0);
+    if (sock < 0)
+        return -1; //printf("ERROR al crear el socket\n");
 
-int cl_connect(){
-	return -1;
+    server.sin_addr.s_addr = inet_addr(argv[1]);
+    server.sin_family = AF_INET;
+    server.sin_port = htons( atoi(argv[2]) );
+    if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0)
+        return 0; //fallo la conexion
+
+	return sock;
 }
 
 char* cl_get(char* key){
@@ -146,4 +165,5 @@ int callMethod(int socket,instruction* parameters){
 //*******MODIFICAR EXIT*****///
 void cl_disconnect(int socket){
 	printf("Desconectar\n");
+	close(socket);
 }

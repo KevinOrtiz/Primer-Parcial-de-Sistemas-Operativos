@@ -5,21 +5,44 @@
 #include "clientLibrary/clientLibrary.h"
 
 #define MAX 10
-//gcc -o prog prog.c clientLibrary/client.c
+//desde la terminal escribe make prog
 
 void printHelp();
 int inputString(FILE* fp);
 
 
-int main(){
+int main(int argc , char *argv[]){
 	int i,val=0;
 	instruction parameters;
 	int socket=-1;
 	FILE *comando;
-	//conectarse
-	cl_connect();
+    //char message[1000] , server_reply[1000];
+	socket = cl_connect(argv);
+	if( socket < 0 )
+        printf("ERROR al crear el socket...\n");
+    puts("Conectado...");
 
 	while(1){
+        /*printf("Ingrese : ");
+        bzero(message,1000);
+        fgets(message,1000,stdin);
+
+        //Send some data
+        if( send(socket , message , strlen(message) , 0) < 0)
+        {
+            puts("Fallo el envio\n");
+            return 1;
+        }
+
+        //Receive a reply from the server
+        if( recv(socket , server_reply , 1000 , 0) < 0)
+        {
+            puts("recv failed\n");
+            break;
+        }
+
+        printf("Respuesta del servidor : ");
+        puts(server_reply);*/
 		printf("Comand$: ");
 	    val = inputString(stdin);
 	    if(!val){
@@ -38,7 +61,6 @@ int main(){
 	    	callMethod(socket,&parameters);
 	    else
 	    	printf("Error Fatal: el comando es incorrecto use el comando HELP\n");
-	    
 	}
 
     return 0;
@@ -55,7 +77,7 @@ void printHelp(){
 }
 
 int inputString(FILE* fp){
-//The size is extended by the input with the value of the provisional 
+//The size is extended by the input with the value of the provisional
     if(!fp){
     	return NULL;
     }
@@ -64,9 +86,9 @@ int inputString(FILE* fp){
     size_t len = 0;
     FILE *temp;
     temp=fopen("temp","w");
-    if(!temp)
+    if( !temp )
     	return 0;
-    while(EOF!=(ch=fgetc(fp)) && ch != '\n'){  
+    while( EOF != (ch=fgetc(fp)) && ch != '\n'){
         str[len++]=ch;
         if(len==(MAX-1)){
         	str[len]='\0';

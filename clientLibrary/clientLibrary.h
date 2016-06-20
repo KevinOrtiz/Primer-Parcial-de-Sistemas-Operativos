@@ -12,7 +12,7 @@ typedef struct instruction {
 int cl_validateInput(instruction* parameters);
 
 //********MODIFICAR CONNECT*******
-int cl_connect();
+int cl_connect(char *argv[]);
 
 char* cl_get(char* key);
 char* cl_set(char* key, FILE* value);
