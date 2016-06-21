@@ -1,6 +1,7 @@
 #include "nodelist.h"
 #include "list.h"
 #include <stdlib.h>
+#include <string.h>
 #include <stdio.h>
 
 // gcc -o prog ejemplo.c nodelist.c list.c
@@ -10,7 +11,9 @@ int main(){
 
 	int i = 0;
 	for (i=0; i< 10; i++){
-		NodeList* n = nodeListNew("Mensaje");
+		char * m = (char*)malloc(sizeof(char)*9);
+		strcpy(m, "Mensaje");
+		NodeList* n = nodeListNew(m);
 		listAddNode(L,n);
 	}
 
@@ -18,5 +21,6 @@ int main(){
 	for(it = L->header; it!=NULL; it = it->next){
 		printf("%s\n", it->cont);
 	}
+	listDelete(&L);
 	return 0;
 }

@@ -19,3 +19,8 @@ void nodeListSetNext(NodeList *p, NodeList *q){
 NodeList *nodeListGetNext(NodeList *p){
     return p->next;
 }
+
+void nodeListDelete(NodeList** p){
+	free((*p)->cont);
+	free(*p);
+}

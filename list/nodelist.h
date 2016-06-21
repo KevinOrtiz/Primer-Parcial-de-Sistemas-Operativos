@@ -12,6 +12,7 @@ void nodeListSetCont(NodeList *p, char* cont);
 char* nodeListGetCont(NodeList *p);
 void nodeListSetNext(NodeList *p, NodeList *q);
 NodeList * nodeListGetNext(NodeList *p);
+void nodeListDelete(NodeList** p);
 
 
 #endif	/* _NODE_H */

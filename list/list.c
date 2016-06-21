@@ -46,7 +46,10 @@ NodeList *listRemoveFirst(List *L){
 
 
 void listDelete(List **L){
-
+    while((*L)->header!=NULL){
+        NodeList * node = listRemoveFirst(*L);
+        nodeListDelete(&node);
+    }
     free(*L);
 }
 
