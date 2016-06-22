@@ -8,7 +8,7 @@ typedef struct instruction {
 	FILE* value;
 }instruction;
 
-
+void printHelp();
 int cl_validateInput(instruction* parameters);
 
 //********MODIFICAR CONNECT*******

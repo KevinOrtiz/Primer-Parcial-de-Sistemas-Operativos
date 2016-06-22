@@ -7,7 +7,7 @@
 #define MAX 10
 //desde la terminal escribe make prog
 
-void printHelp();
+
 int inputString(FILE* fp);
 
 
@@ -66,20 +66,11 @@ int main(int argc , char *argv[]){
     return 0;
 }
 
-void printHelp(){
-	printf("Comands:\n");
-	printf("\tget <key>\n");
-	printf("\tset <key> <value>\n");
-	printf("\tlist\n");
-	printf("\tdel <key>\n");
-	printf("\texit\n");
-	printf("\thelp\n");
-}
 
 int inputString(FILE* fp){
 //The size is extended by the input with the value of the provisional
     if(!fp){
-    	return NULL;
+    	return 0;
     }
     char str[MAX];
     int ch;

@@ -4,6 +4,7 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include <sys/types.h>
 #include <arpa/inet.h>
 #include "clientLibrary.h"
 
@@ -14,6 +15,16 @@ typedef struct instruction {
 	FILE* value;
 }instruction;
 */
+void printHelp(){
+	printf("Comands:\n");
+	printf("\tget <key>\n");
+	printf("\tset <key> <value>\n");
+	printf("\tlist\n");
+	printf("\tdel <key>\n");
+	printf("\texit\n");
+	printf("\thelp\n");
+}
+
 void toUpper(char* string){
 
 	while(*string!= '\0' ){
