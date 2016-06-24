@@ -1,10 +1,12 @@
 #include "list.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 
 List *listNew(){
     List *newList = malloc(sizeof(List));
-    newList->header = newList->last = NULL;
+    newList->header = NULL;
+    newList->last = NULL;
     return newList;
 }
 int listIsEmpty(List *L){
@@ -16,8 +18,9 @@ NodeList *listGetLast(List *L) { return L->last; }
 
 void listAddNode(List *L, NodeList *newNode){
     nodeListSetNext(newNode, NULL);
-    if(listIsEmpty(L))
+    if(listIsEmpty(L)){
         L->header = L->last = newNode;
+    }
     else {
         nodeListSetNext(L->last, newNode);
         L->last = newNode;

@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <arpa/inet.h>
 #include "clientLibrary.h"
+#include "../list/list.h"
 
 /*
 typedef struct instruction {
@@ -15,6 +16,33 @@ typedef struct instruction {
 	FILE* value;
 }instruction;
 */
+List* inputString(FILE* fp){
+//The size is extended by the input with the value of the provisional
+    if(!fp){
+    	return NULL;
+    }
+    char *str;
+    int ch;
+    size_t len = 0;
+    List* l;
+    l=listNew();
+    str=(char*)malloc(sizeof(char)*MAX);
+    while( EOF != (ch=fgetc(fp)) && ch != '\n'){
+        str[len++]=ch;
+        if(len==(MAX-1)){
+        	str[len]='\0';
+        	listAddNode(l,nodeListNew(str));
+        	str=(char*)malloc(sizeof(char)*MAX);
+        	len=0;
+        }
+    }
+    if(len!=0){
+    	str[len]='\0';
+    	listAddNode(l,nodeListNew(str));
+    }
+	return l;
+}
+
 void printHelp(){
 	printf("Comands:\n");
 	printf("\tget <key>\n");
@@ -43,55 +71,98 @@ int onlykey(char *command){
 	return !strcmp(command,"GET") || !strcmp(command,"DEL");
 }
 
+int isCommand(char *command){
+	return strcmp(command,"SET") || !strcmp(command,"GET") || !strcmp(command,"DEL") || !strcmp(command,"EXIT") || !strcmp(command,"HELP") || !strcmp(command,"LIST");
+}
+
 //retorna un codigo que indica error o exito
 // -1 : error por falta de memoria
 // 1 : exito
 // -2: Error de parsing comando muy grande, mayor que 5 caracteres,numero incorrecto de parametros
 //key 128MB
 
-int cl_validateInput(instruction* parameters){
+int cl_validateInput(List* input,instruction* parameters){
 
     //inicializo el arreglo de paremetros
-    int i =0;
+    int i =0,j;
     char c;
-    FILE *temp;
+    char *stringAux=NULL;
 
-    temp=fopen("temp","r");
     //se obtiene el comando
-    while(EOF != (c=fgetc(temp)) && c!=' '){
-    	(parameters->command)[i++]=c;
-    	if(i==5) // si el comando supera el maximo de caracteres
+    NodeList *node=listRemoveFirst(input);
+    if(!node)// la lista de entrada esta vacia
+		return -2;
+	
+	stringAux= nodeListGetCont(node);
+	if(!stringAux)// la cadena esta vacia
+		return -2;
+	while(stringAux[i]!=' ' && stringAux[i]!='\0'){
+		(parameters->command)[i]=stringAux[i];
+		i++;
+		if(i==5) // si el comando supera el maximo de caracteres
     		return -2;
-    }
+	}
     (parameters->command)[i]='\0';
     toUpper(parameters->command);
-    while(EOF != (c=fgetc(temp)) && c==' ');//quitar espacion en blanco
 
-    if(onlyCommand(parameters->command) && c==EOF)// es instruccion es sin parametros
+    //quitar espacion en blanco
+    while(stringAux[i]==' '){
+    	i++;
+    	if(i==MAX-1){
+    		nodeListDelete(&node);
+    		node=listRemoveFirst(input);
+    		stringAux=nodeListGetCont(node);
+    		i=0;
+    	}
+    }
+
+    if(onlyCommand(parameters->command) && stringAux[i]=='\0')// es instruccion es sin parametros
     	return 1;
     if(onlyCommand(parameters->command))//numero incorrecto de parametros
     	return -2;
-    if(c==EOF)//numero incorrecto de parametros
+    if(stringAux[i]=='\0')//numero incorrecto de parametros
     	return -2;
     //se obtiene el key
-    i=0;
-    (parameters->key)[i++]=c;
-    while(EOF != (c=fgetc(temp)) && c!=' '){
-    	(parameters->key)[i++]=c;
-    	if(i==MAXKEY) // si la clave supera el maximo de caracteres
+    j=0;
+    //(parameters->key)[j++]=stringAux[i];
+    //i++;
+    while(stringAux[i]!=' ' && stringAux[i]!='\0'){
+    	if(j==MAXKEY) // si la clave supera el maximo de caracteres
     		return -2;
+    	(parameters->key)[j++]=stringAux[i];
+    	if(i==MAX-1){//tomo el siguiente nodo
+    		nodeListDelete(&node);
+    		node=listRemoveFirst(input);
+    		stringAux=nodeListGetCont(node);
+    		i=0;
+    	}
+    	i++;
     }
-    (parameters->key)[i]='\0';
-    while(EOF != (c=fgetc(temp)) && c==' ');//quitar espacion en blanco
+    (parameters->key)[j]='\0';
+    while(stringAux[i]==' '){
+    	i++;
+    	if(i==MAX-1){//tomo el siguiente nodo
+    		nodeListDelete(&node);
+    		node=listRemoveFirst(input);
+    		stringAux=nodeListGetCont(node);
+    		i=0;
+    	}
+    }
 
-    if(onlykey(parameters->command) && c==EOF)// es instruccion de 1 solo parametro
+    if(onlykey(parameters->command) && stringAux[i]=='\0')// es instruccion de 1 solo parametro
     	return 1;
     if(onlykey(parameters->command))//numero incorrecto de parametros
     	return -2;
-    if(c==EOF)//numero incorrecto de parametros
+    if(stringAux[i]=='\0')//numero incorrecto de parametros
     	return -2;
-    fseek(temp,-1*sizeof(char),SEEK_CUR);
-    parameters->value=temp;
+    i--; //regreso 1 posicion del string
+    char* newString;
+    newString=(char*)malloc(sizeof(char)*(strlen(stringAux+i)));
+    strcpy(newString,stringAux+i);
+    nodeListDelete(&node);
+    node=nodeListNew(newString);
+    listAddFirst(input,node);
+    parameters->value=input;
     return 1;
 }
 
@@ -145,9 +216,6 @@ int callMethod(int socket,instruction* parameters){
 	}
 	if(strcmp(parameters->command,"SET")==0){
 		printf("Se ejecuta SET <%s> ",parameters->key);
-		cl_set(parameters->key, parameters->value);
-		if(parameters->value)
-	    	fclose(parameters->value);
 		return 0;
 	}
 	if(strcmp(parameters->command,"LIST")==0){

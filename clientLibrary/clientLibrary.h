@@ -1,15 +1,18 @@
 #ifndef HEADER_FILE
 #define HEADER_FILE
 #define MAXKEY 128000
+#define MAX 6
+#include "../list/list.h"
 
 typedef struct instruction {
 	char command[5];
 	char key[MAXKEY];
-	FILE* value;
+	List* value;
 }instruction;
 
 void printHelp();
-int cl_validateInput(instruction* parameters);
+List* inputString(FILE* fp);
+int cl_validateInput(List* input,instruction* parameters);
 
 //********MODIFICAR CONNECT*******
 int cl_connect(char *argv[]);

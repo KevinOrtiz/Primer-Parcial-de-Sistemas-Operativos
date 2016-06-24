@@ -1,5 +1,6 @@
 #include "nodelist.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 NodeList *nodeListNew(char* cont){
     NodeList *newNode = malloc(sizeof(NodeList));
