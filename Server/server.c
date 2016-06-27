@@ -1,8 +1,12 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>    //strlen
+#include <sys/socket.h>
+#include <arpa/inet.h> //inet_addr
+#include <unistd.h>    //write
 
-#define workNumbers 1
+#define workNumbers 2
 #define MAX 5
 //compilar gcc -o server server.c
 //ejecutar: ./server < entradas.txt > log.txt
@@ -37,7 +41,8 @@ int getNewSocket(){
 }
 
 void * worker(void* arg){
-	int socket;
+	int socket,read_size;
+	char message[1000];
 	while(1) {
 		pthread_mutex_lock(&mutex);
 		while (count == 0)
@@ -46,19 +51,28 @@ void * worker(void* arg){
 		conectionTaking++;
 		pthread_mutex_unlock(&mutex);
 
-		int contador=999999;
-		while(contador!=0)
-			contador--;
-		printf("Procese el sokect: %d\n", socket);
-		pthread_mutex_lock(&mutex);
-		conectionTaking--; // libero este worker
-		pthread_mutex_unlock(&mutex);
+		while(1){// atiendo al cliente
+			read_size = recv(socket , message , 1000 , 0);
+			if(read_size>0){
+				message[read_size]='\0';
+			}else{
+				continue;
+			}
+			send(socket , message , strlen(message),0);
+			printf("sokect: %d, mensaje: %s\n", socket,message);
+			pthread_mutex_lock(&mutex);
+			conectionTaking--; // libero este worker
+			if (conectionTaking < workNumbers && count>0){
+				pthread_cond_signal(&newConection_cv);
+			} 
+			pthread_mutex_unlock(&mutex);
+		}
 	}
 
 	return NULL;
 }
 
-
+/*
 char *inputString(FILE* fp, size_t size){
  //The size is extended by the input with the value of the provisional 
      if(!fp){
@@ -82,48 +96,70 @@ char *inputString(FILE* fp, size_t size){
  
      return str;
  }
+*/
 
-
-int main(){
+int main(int argc , char *argv[]){
 
 
 	//BOSS
+	int socket_desc ,c;
+    struct sockaddr_in server , client;
 	int i;
+	//Create socket
+    socket_desc = socket(AF_INET , SOCK_STREAM , 0);
+    c = sizeof(struct sockaddr_in);
+    if (socket_desc == -1)
+    {
+        printf("no se pudo crear el socket...\n");
+    }
+    //Prepare the sockaddr_in structure
+    server.sin_family = AF_INET;
+    server.sin_addr.s_addr = INADDR_ANY;
+    server.sin_port = htons( 9999 );
+    //Bind
+    if( bind(socket_desc,(struct sockaddr *)&server , sizeof(server)) < 0)
+    {
+        //print the error message
+        perror("ERROR, fallo el enlace\n");
+        return 1;
+    }
+    puts("bind done");
+
+    //Listen
+    listen(socket_desc , 3);
+    
+
 	for(i=0; i< MAX; i++){
 		newSockets[i]=0;
 	}
+
 	//create a thread pool
 	for(i=0; i< workNumbers; i++){
 		pthread_t p;
 		pthread_create(&p, NULL, worker, NULL);
 	}
 	//
-
+	puts("Esperando por clientes...");
 	while (1) {
-		if(ban){
-			//leer de stdin
-			int socket; 
-			
-			char * input = inputString(stdin, 10);
-			if(*input=='\0'){
-				ban=0;
-				continue;
-			}
-			else{
-				socket = atoi(input);
-				//printf("Servidor recibe %d\n", socket );
-			}
+		int client_sock;
+		
+	    //accept connection from an incoming client
+	    client_sock = accept(socket_desc, (struct sockaddr *)&client, (socklen_t*)&c);
+	    if (client_sock < 0)
+	    {
+	        perror("No se acepto la conexion\n");
+	        continue;
+	    }
 
-			pthread_mutex_lock(&mutex);
-			if (conectionTaking == workNumbers){ //todos los workes estan ocupados
-				printf("Ya no hay hilos, perdio el dato %d\n", socket);
-				pthread_mutex_unlock(&mutex);
-				continue;
-			}
-			putNewSocket(socket);
-			pthread_cond_signal(&newConection_cv);
+		pthread_mutex_lock(&mutex);
+		if (conectionTaking == workNumbers){ //todos los workes estan ocupados
+			printf("Ya no hay hilos para atenderlo, se perdio la conexion con el cliente: %d\n", client_sock);
 			pthread_mutex_unlock(&mutex);
+			continue;
 		}
+		putNewSocket(client_sock);
+		pthread_cond_signal(&newConection_cv);
+		pthread_mutex_unlock(&mutex);
 
 
 	}
