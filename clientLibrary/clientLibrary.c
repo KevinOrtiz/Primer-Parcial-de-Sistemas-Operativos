@@ -277,13 +277,31 @@ char* cl_set(char* key, FILE* value){
 	printf(">\n" );
 	return NULL;
 }
-char* cl_list(){
-	print("key:")
-	return NULL;
+char* cl_list(int socket){
+    char comando[5] = "LIST";
+    char datosKeys[6000];
+    strcpy(datosKeys,comando);
+    send(socket,comando,sizeof(comando),0);
+    if (recv(socket,datosKeys,6000,0)<0){
+        puts("ALGO SUCEDIO EN EL SERVER");
+    }
+    puts(datosKeys);
+
 
 }
-char* cl_del(char* key){
-	return NULL;
+char* cl_del(char* key,int socket){
+    char comando[7] = "DELETE"
+    char datos[100];
+    strcpy(datos,comando);
+    strcpy(datos,key);
+    send(socket,comando,sizeof(comando),0);
+    if (recv(socket,datos,100,0)<0)
+    {
+        puts("ALGO SUCEDIO EN EL SERVER");
+    }
+    puts("DATO EXITOSAMENTE ELIMINADO");
+
+	
 }
 
 
