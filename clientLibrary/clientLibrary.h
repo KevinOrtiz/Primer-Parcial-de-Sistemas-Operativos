@@ -25,5 +25,8 @@ char* cl_del(char* key);
 //*******MODIFICAR disconnect*****///
 void cl_disconnect(int socket);
 
+void cl_help();
+void cl_exit();
+
 
 #endif

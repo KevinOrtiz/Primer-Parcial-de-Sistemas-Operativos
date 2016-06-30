@@ -293,9 +293,11 @@ char* cl_del(char* key,int socket){
     char comando[7] = "DELETE"
     char datos[100];
     strcpy(datos,comando);
+    strcpy(datos,'')
     strcpy(datos,key);
-    send(socket,comando,sizeof(comando),0);
-    if (recv(socket,datos,100,0)<0)
+    int valorConfirmacion;
+    send(socket,datos,sizeof(comando),0);
+    if (recv(socket,valorConfirmacion,sizeof(valorConfirmacion),0)<0)
     {
         puts("ALGO SUCEDIO EN EL SERVER");
     }
@@ -303,6 +305,18 @@ char* cl_del(char* key,int socket){
 
 	
 }
+
+void cl_help(){
+    printf("GET KEY :OPERACION GET RETORNA EL VALOR ASOCIADO A DICHA CLAVE
+            SET KEY VALUE:ALMACENA EN MEMORIA LA CLAVE CON EL VALOR ASOCIADO:
+            EL VALOR PUEDE CONTENER CARACTERES
+            DELETE KEY:ELIMINA LA CLAVE CON SU VALOR ASOCIADO
+            LIST:RETORNA LA LISTA DE TODAS LAS CLAVES ASOCIADAS
+            EXIT:TERMINA LA CONEXION CON EL SERVIDOR Y POSTERIORMENTE TERMINA EJECUCION 
+            DEL PROGRAMA CLIENTE \n");
+
+}
+
 
 
 /*int callMethod(int socket,instruction* parameters){
@@ -342,5 +356,12 @@ char* cl_del(char* key,int socket){
 //*******MODIFICAR EXIT*****///
 void cl_disconnect(int socket){
 	printf("Desconectar\n");
-	//close(socket);
+	int valor ;
+    valor = shutdown(socket,2);
+    if (valor < 0){
+        printf("No se cerro correctamente el socket \n");
+
+    }
+    printf("socket correctamente cerrado \n");
+    exit(0);
 }
