@@ -278,12 +278,14 @@ char* cl_set(char* key, FILE* value){
 	return NULL;
 }
 char* cl_list(){
+	print("key:")
 	return NULL;
 
 }
 char* cl_del(char* key){
 	return NULL;
 }
+
 
 /*int callMethod(int socket,instruction* parameters){
 
