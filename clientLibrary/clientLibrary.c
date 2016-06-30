@@ -357,6 +357,14 @@ void cl_help(){
 void cl_disconnect(int socket){
 	printf("Desconectar\n");
 	int valor ;
+    /*
+    int shutdiwn(socket,how)
+    Cierra la conexion del socket <socket> , The argument how especifica las siguientes acciones:
+    0 Stop to receiving data del socket. Si algun dato arriva al socket lo elimina
+    1 Stop de enviar datos al socket, todos los datos esperando por ser enviador se descartan
+    2 Detiene tanto la recepcion como la transmision
+
+    */
     valor = shutdown(socket,2);
     if (valor < 0){
         printf("No se cerro correctamente el socket \n");
