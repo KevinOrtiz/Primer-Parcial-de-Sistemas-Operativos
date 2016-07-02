@@ -60,13 +60,14 @@ void * worker(void* arg){
 			}
 			send(socket , message , strlen(message),0);
 			printf("sokect: %d, mensaje: %s\n", socket,message);
-			pthread_mutex_lock(&mutex);
-			conectionTaking--; // libero este worker
-			if (conectionTaking < workNumbers && count>0){
-				pthread_cond_signal(&newConection_cv);
-			} 
-			pthread_mutex_unlock(&mutex);
 		}
+
+		pthread_mutex_lock(&mutex);
+		conectionTaking--; // libero este worker
+		if (conectionTaking < workNumbers && count>0){
+			pthread_cond_signal(&newConection_cv);
+		} 
+		pthread_mutex_unlock(&mutex);
 	}
 
 	return NULL;
