@@ -24,6 +24,9 @@ char* dsStringRemoveFirst(dsString *s);
 
 void dsStringDelete(dsString **s);
 
+void dsStringPrint(dsString *s);
+void dsStringPrintChunk(dsString *s);
+
 
 #endif	/* _DSSTRING_H */
 

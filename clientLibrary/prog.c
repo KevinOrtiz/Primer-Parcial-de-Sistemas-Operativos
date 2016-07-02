@@ -2,6 +2,8 @@
 #include <time.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/socket.h>    //socket
+#include <arpa/inet.h> //inet_addr
 #include "clientLibrary.h"
 #include "dsstring.h"
 
@@ -12,10 +14,12 @@ int main(int argc , char *argv[]){
 	int i;
     dsString* key;
     dsString* value;
+    int sock;
 
+    sock=cl_connect("127.0.0.1","9999");
+    printf("socket: %d\n",sock);
     key = dsStringNew();
     value = dsStringNew();
-
 	char* command = (char*)malloc(sizeof(char)*(MAX_COMMAND_LENGTH+ 1));
 
 	while(1){
@@ -25,25 +29,17 @@ int main(int argc , char *argv[]){
 	    	cl_printError(input);
 	    	continue;
 	    }
-	    cl_exec(command, key, value);
+	    cl_exec(sock,command, key, value);
 
 	    ///imprime
 	    if(!dsStringEmpty(key)){
-	    	printf("key\n");
-		    dsChunk* it;
-			for(it = key->header; it!=NULL ; it= it->next ){
-				printf("%s", it->cont);
-			}
-			printf("\n");
+	    	printf("\nkey: ");
+		    dsStringPrint(key);
 	    }
 
 		if(!dsStringEmpty(value)){
-			printf("value\n");
-			dsChunk* it;
-			for(it = value->header; it!=NULL ; it= it->next ){
-				printf("%s", it->cont);
-			} 
-			printf("\n");
+			printf("\nvalue: ");
+			dsStringPrint(value);
 		} 	
 
 	    

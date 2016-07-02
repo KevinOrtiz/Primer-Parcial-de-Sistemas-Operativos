@@ -96,5 +96,22 @@ void dsStringDelete(dsString **s){
     free(*s);
 }
 
+void dsStringPrint(dsString *s){
+    dsChunk* it;
+    for(it = s->header; it!=NULL ; it= it->next ){
+        printf("%s", it->cont);
+    }
+    printf("\n");
+}
+
+void dsStringPrintChunk(dsString *s){
+    dsChunk* it;
+    for(it = s->header; it!=NULL ; it= it->next ){
+        printf("%s", it->cont);
+        printf("\n");
+    }
+    
+}
+
 
 

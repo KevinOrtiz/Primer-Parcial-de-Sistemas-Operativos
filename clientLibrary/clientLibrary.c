@@ -230,8 +230,13 @@ void cl_printError(int errorCode){
 }
 
 
-int cl_exec(char* command, dsString* key, dsString* value){
-    
+int cl_exec(int sock,char* command, dsString* key, dsString* value){
+    char server_reply[100];
+    if( send(sock , command , strlen(command) , 0) < 0)
+    {
+        return -1;
+    }
+    printf("envie: %s",command);
     if(strcmp(command,"EXIT")==0){
         
         //cl_disconnect();
@@ -250,16 +255,16 @@ int cl_exec(char* command, dsString* key, dsString* value){
  * Retorna  0: error de conexion
  * Retorna > 0: el socket se creo con exito
  */
-int cl_connect(char *argv[]){
+int cl_connect(char* ip, char* puerto){
     int sock;
     struct sockaddr_in server;
     sock = socket(AF_INET , SOCK_STREAM , 0);
     if (sock < 0)
         return -1; //printf("ERROR al crear el socket\n");
 
-    server.sin_addr.s_addr = inet_addr(argv[1]);
+    server.sin_addr.s_addr = inet_addr(ip);
     server.sin_family = AF_INET;
-    server.sin_port = htons( atoi(argv[2]) );
+    server.sin_port = htons( atoi(puerto) );
     if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0)
         return 0; //fallo la conexion
 
@@ -299,9 +304,14 @@ char* cl_list(int socket){
 
 char* cl_del(char* key,int socket){
     /*
+<<<<<<< HEAD
 
     char comando[7] = "DELETE";
     char* datos;
+=======
+    char comando[7] = "DELETE";
+    char datos[100];
+>>>>>>> 72e25317bd101b15b0939bb656f1b9c8c894f1cc
     strcpy(datos,comando);
     strcpy(datos,key);
     send(socket,datos,sizeof(comando),0);
@@ -309,15 +319,34 @@ char* cl_del(char* key,int socket){
     {
         puts("ALGO SUCEDIO EN EL SERVER");
     }
+<<<<<<< HEAD
     return datos;
+=======
+    puts("DATO EXITOSAMENTE ELIMINADO");
+    */
+    return NULL;
+>>>>>>> 72e25317bd101b15b0939bb656f1b9c8c894f1cc
 
     */
 	
 }
 
 void cl_help(){
+<<<<<<< HEAD
     printf("Get key :OPERACION GET RETORNA EL VALOR ASOCIADO A DICHA CLAVE \n");
     printf("Set key: Operacion set envia el valor y la clave para almacenarlo en el hash \n");
+=======
+    /*
+    printf("GET KEY :OPERACION GET RETORNA EL VALOR ASOCIADO A DICHA CLAVE
+            SET KEY VALUE:ALMACENA EN MEMORIA LA CLAVE CON EL VALOR ASOCIADO:
+            EL VALOR PUEDE CONTENER CARACTERES
+            DELETE KEY:ELIMINA LA CLAVE CON SU VALOR ASOCIADO
+            LIST:RETORNA LA LISTA DE TODAS LAS CLAVES ASOCIADAS
+            EXIT:TERMINA LA CONEXION CON EL SERVIDOR Y POSTERIORMENTE TERMINA EJECUCION 
+            DEL PROGRAMA CLIENTE \n");
+    */
+    printf("ayuda\n");
+>>>>>>> 72e25317bd101b15b0939bb656f1b9c8c894f1cc
 
 }
 
