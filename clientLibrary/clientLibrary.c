@@ -277,43 +277,47 @@ char* cl_set(char* key, FILE* value){
 	printf(">\n" );
 	return NULL;
 }
+
 char* cl_list(int socket){
+    /*
+
     char comando[5] = "LIST";
-    char datosKeys[6000];
+    char* datosKeys;
     strcpy(datosKeys,comando);
     send(socket,comando,sizeof(comando),0);
     if (recv(socket,datosKeys,6000,0)<0){
         puts("ALGO SUCEDIO EN EL SERVER");
     }
-    puts(datosKeys);
+    return datosKeys;
+
+    */
+    return ;
 
 
 }
+
+
 char* cl_del(char* key,int socket){
-    char comando[7] = "DELETE"
-    char datos[100];
+    /*
+
+    char comando[7] = "DELETE";
+    char* datos;
     strcpy(datos,comando);
-    strcpy(datos,'')
     strcpy(datos,key);
-    int valorConfirmacion;
     send(socket,datos,sizeof(comando),0);
-    if (recv(socket,valorConfirmacion,sizeof(valorConfirmacion),0)<0)
+    if (recv(socket,datos,sizeof(datos),0)<0)
     {
         puts("ALGO SUCEDIO EN EL SERVER");
     }
-    puts("DATO EXITOSAMENTE ELIMINADO");
+    return datos;
 
+    */
 	
 }
 
 void cl_help(){
-    printf("GET KEY :OPERACION GET RETORNA EL VALOR ASOCIADO A DICHA CLAVE
-            SET KEY VALUE:ALMACENA EN MEMORIA LA CLAVE CON EL VALOR ASOCIADO:
-            EL VALOR PUEDE CONTENER CARACTERES
-            DELETE KEY:ELIMINA LA CLAVE CON SU VALOR ASOCIADO
-            LIST:RETORNA LA LISTA DE TODAS LAS CLAVES ASOCIADAS
-            EXIT:TERMINA LA CONEXION CON EL SERVIDOR Y POSTERIORMENTE TERMINA EJECUCION 
-            DEL PROGRAMA CLIENTE \n");
+    printf("Get key :OPERACION GET RETORNA EL VALOR ASOCIADO A DICHA CLAVE \n");
+    printf("Set key: Operacion set envia el valor y la clave para almacenarlo en el hash \n");
 
 }
 

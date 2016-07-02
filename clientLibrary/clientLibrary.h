@@ -19,14 +19,12 @@ int cl_connect(char *argv[]);
 
 char* cl_get(char* key);
 char* cl_set(char* key, FILE* value);
-char* cl_list();
-char* cl_del(char* key);
+char* cl_list(int socket);
+char* cl_del(char* key,int socket);
 //int callMethod(int socket,instruction* parameters);
 //*******MODIFICAR disconnect*****///
 void cl_disconnect(int socket);
 
 void cl_help();
-void cl_exit();
-
 
 #endif
