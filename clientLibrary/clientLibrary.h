@@ -1,29 +1,32 @@
 #ifndef HEADER_FILE
-#define HEADER_FILE
-#define MAXKEY 128000
-#define MAX 6
-#include "../list/list.h"
-
-typedef struct instruction {
+#include "dsstring.h"
+#include "constants.h"
+/*typedef struct instruction {
 	char command[5];
 	char key[MAXKEY];
 	List* value;
-}instruction;
+}instruction;*/
 
-void printHelp();
-List* inputString(FILE* fp);
-int cl_validateInput(List* input,instruction* parameters);
 
+
+void cl_printHelp();
+int cl_inputString(FILE* fp, char* command, dsString* key, dsString* value);
+int cl_validateCommand(char* command);
+void cl_printError(int errorCode);
+int cl_exec(int sock,char* command, dsString* key, dsString* value);
 //********MODIFICAR CONNECT*******
-int cl_connect(char *argv[]);
+int cl_connect(char* ip, char* puerto);
 
 char* cl_get(char* key);
 char* cl_set(char* key, FILE* value);
 char* cl_list();
-char* cl_del(char* key);
-int callMethod(int socket,instruction* parameters);
+char* cl_del(char* key,int socket);
+//int callMethod(int socket,instruction* parameters);
 //*******MODIFICAR disconnect*****///
 void cl_disconnect(int socket);
+
+void cl_help();
+void cl_exit();
 
 
 #endif

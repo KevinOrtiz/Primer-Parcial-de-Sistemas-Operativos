@@ -7,7 +7,8 @@
 #include <sys/types.h>
 #include <arpa/inet.h>
 #include "clientLibrary.h"
-#include "../list/list.h"
+#include "dsstring.h"
+
 
 /*
 typedef struct instruction {
@@ -16,34 +17,9 @@ typedef struct instruction {
 	FILE* value;
 }instruction;
 */
-List* inputString(FILE* fp){
-//The size is extended by the input with the value of the provisional
-    if(!fp){
-    	return NULL;
-    }
-    char *str;
-    int ch;
-    size_t len = 0;
-    List* l;
-    l=listNew();
-    str=(char*)malloc(sizeof(char)*MAX);
-    while( EOF != (ch=fgetc(fp)) && ch != '\n'){
-        str[len++]=ch;
-        if(len==(MAX-1)){
-        	str[len]='\0';
-        	listAddNode(l,nodeListNew(str));
-        	str=(char*)malloc(sizeof(char)*MAX);
-        	len=0;
-        }
-    }
-    if(len!=0){
-    	str[len]='\0';
-    	listAddNode(l,nodeListNew(str));
-    }
-	return l;
-}
 
-void printHelp(){
+
+void cl_printHelp(){
 	printf("Comands:\n");
 	printf("\tget <key>\n");
 	printf("\tset <key> <value>\n");
@@ -53,117 +29,224 @@ void printHelp(){
 	printf("\thelp\n");
 }
 
-void toUpper(char* string){
+void cl_toUpper(char* string){
 
-	while(*string!= '\0' ){
-		if(*string >=97 && *string <= 122){
-			*string = *string - 32;
-		}
-		string++;
-	}
+    while(*string!= '\0' ){
+        if(*string >=97 && *string <= 122){
+            *string = *string - 32;
+        }
+        string++;
+    }
 }
 
-int onlyCommand(char *command){
-	return !strcmp(command,"EXIT") || !strcmp(command,"HELP") || !strcmp(command,"LIST");
-}
-
-int onlykey(char *command){
-	return !strcmp(command,"GET") || !strcmp(command,"DEL");
-}
-
-int isCommand(char *command){
-	return strcmp(command,"SET") || !strcmp(command,"GET") || !strcmp(command,"DEL") || !strcmp(command,"EXIT") || !strcmp(command,"HELP") || !strcmp(command,"LIST");
-}
-
-//retorna un codigo que indica error o exito
-// -1 : error por falta de memoria
-// 1 : exito
-// -2: Error de parsing comando muy grande, mayor que 5 caracteres,numero incorrecto de parametros
-//key 128MB
-
-int cl_validateInput(List* input,instruction* parameters){
-
-    //inicializo el arreglo de paremetros
-    int i =0,j;
-    char c;
-    char *stringAux=NULL;
-
-    //se obtiene el comando
-    NodeList *node=listRemoveFirst(input);
-    if(!node)// la lista de entrada esta vacia
-		return -2;
-	
-	stringAux= nodeListGetCont(node);
-	if(!stringAux)// la cadena esta vacia
-		return -2;
-	while(stringAux[i]!=' ' && stringAux[i]!='\0'){
-		(parameters->command)[i]=stringAux[i];
-		i++;
-		if(i==5) // si el comando supera el maximo de caracteres
-    		return -2;
-	}
-    (parameters->command)[i]='\0';
-    toUpper(parameters->command);
-
-    //quitar espacion en blanco
-    while(stringAux[i]==' '){
-    	i++;
-    	if(i==MAX-1){
-    		nodeListDelete(&node);
-    		node=listRemoveFirst(input);
-    		stringAux=nodeListGetCont(node);
-    		i=0;
-    	}
+int cl_inputString(FILE* fp, char* command, dsString* key, dsString* value){
+    //validar argumentos
+    if(!fp){
+        return WRONG_ARGUMENT;
+    }
+    if(!command){
+        return WRONG_ARGUMENT;
+    }
+    if(!key){
+        return WRONG_ARGUMENT;
+    }
+    if(!value){
+        return WRONG_ARGUMENT;
     }
 
-    if(onlyCommand(parameters->command) && stringAux[i]=='\0')// es instruccion es sin parametros
-    	return 1;
-    if(onlyCommand(parameters->command))//numero incorrecto de parametros
-    	return -2;
-    if(stringAux[i]=='\0')//numero incorrecto de parametros
-    	return -2;
-    //se obtiene el key
-    j=0;
-    //(parameters->key)[j++]=stringAux[i];
-    //i++;
-    while(stringAux[i]!=' ' && stringAux[i]!='\0'){
-    	if(j==MAXKEY) // si la clave supera el maximo de caracteres
-    		return -2;
-    	(parameters->key)[j++]=stringAux[i];
-    	if(i==MAX-1){//tomo el siguiente nodo
-    		nodeListDelete(&node);
-    		node=listRemoveFirst(input);
-    		stringAux=nodeListGetCont(node);
-    		i=0;
-    	}
-    	i++;
+    int ch; 
+    long i =0;
+
+    //quita espacios
+    while(EOF!=(ch=fgetc(fp)) && ch!='\n'){
+        if(ch!=' ') break;
     }
-    (parameters->key)[j]='\0';
-    while(stringAux[i]==' '){
-    	i++;
-    	if(i==MAX-1){//tomo el siguiente nodo
-    		nodeListDelete(&node);
-    		node=listRemoveFirst(input);
-    		stringAux=nodeListGetCont(node);
-    		i=0;
-    	}
+    //si llego al final y solo hay espacios, error de parsing
+    if(ch =='\n' || ch == EOF) 
+        return PARSE_ERROR;
+
+
+    command[i]  = ch;
+    i++;
+    //recupera el comando
+    //se leen los siguientes MAX_COMMAND_LENGTH caracteres
+    //si se encuentran espacios se termina
+    while(EOF!=(ch=fgetc(fp)) && ch!='\n' && ch!=' '){
+        if(i == MAX_COMMAND_LENGTH){
+            //limpiar buffer
+            while(EOF!=(ch=fgetc(fp)) && ch!='\n'); 
+
+            //error de parsin
+            return PARSE_ERROR;
+        }
+        command[i] = ch;
+        i++;
     }
 
-    if(onlykey(parameters->command) && stringAux[i]=='\0')// es instruccion de 1 solo parametro
-    	return 1;
-    if(onlykey(parameters->command))//numero incorrecto de parametros
-    	return -2;
-    if(stringAux[i]=='\0')//numero incorrecto de parametros
-    	return -2;
-    i--; //regreso 1 posicion del string
-    char* newString;
-    newString=(char*)malloc(sizeof(char)*(strlen(stringAux+i)));
-    strcpy(newString,stringAux+i);
-    nodeListDelete(&node);
-    node=nodeListNew(newString);
-    listAddFirst(input,node);
-    parameters->value=input;
-    return 1;
+    command[i] = '\0';
+    cl_toUpper(command);
+    int numArgs = cl_validateCommand(command);
+    //comando no reconocido
+    if(numArgs<0){
+        //limpiar buffer
+        while(EOF!=(ch=fgetc(fp)) && ch!='\n');
+        
+        return PARSE_ERROR;
+    }
+        
+        
+
+    if(numArgs==0){
+        //limpiar el buffer
+        while(EOF!=ch && ch!='\n'){
+            ch=fgetc(fp);
+        };  
+        return SUCCESS;
+    }
+
+    if(numArgs > 0){
+        //validar que hayan mas caracteres
+        if(ch==EOF || ch == '\n')
+            return LACK_OF_ARGUMENT;
+        //quitar espacios
+        while(EOF!=(ch=fgetc(fp)) && ch!='\n'){
+            if(ch!=' ') break;
+        }
+        //si llego al final error
+        if(ch==EOF || ch == '\n')
+            return LACK_OF_ARGUMENT;
+        //leer el primer argumento y ponerlo en Key
+        dsStringAddChar(key, ch);
+        int i = 1;
+
+        while(EOF!=(ch=fgetc(fp)) && ch!='\n' && ch!=' '){
+            if(i == MAX_KEY_LENGTH){
+                //limpiar buffer      
+                while(EOF!=ch && ch!='\n'){
+                    ch=fgetc(fp);
+                };  
+                //error de parsin
+                return BIG_KEY;
+            }
+            dsStringAddChar(key, ch);
+            i++;
+        }
+        dsStringAddChar(key, '\0');
+    }
+    if(numArgs > 1){
+
+        //validar que hayan mas caracteres
+        if(ch==EOF || ch == '\n')
+            return LACK_OF_ARGUMENT;
+        //quitar espacios
+        while(EOF!=(ch=fgetc(fp)) && ch!='\n'){
+            if(ch!=' ') break;
+        }
+        //si llego al final error
+        if(ch==EOF || ch == '\n')
+            return LACK_OF_ARGUMENT;
+
+        //leer el primer argumento y ponerlo en Key
+        dsStringAddChar(value, ch);
+        int i = 1;
+        while(EOF!=(ch=fgetc(fp)) && ch!='\n' && ch!=' '){
+            if(i == MAX_VALUE_LENGTH){
+                //limpiar buffer
+                while(EOF!=(ch=fgetc(fp)) && ch!='\n'); 
+
+                //error de parsin
+                return BIG_VALUE;
+            }
+            dsStringAddChar(value, ch);
+            i++;
+        }
+        dsStringAddChar(value, '\0');
+    }
+
+    //limpia el buffer
+    while(EOF!=ch && ch!='\n'){
+        ch=fgetc(fp);
+    };   
+
+    return SUCCESS;
+}
+
+//valida si el comando es valido
+//si no es valido retorna -1
+//si es valido retorna el numero de argumentos que requiere
+int cl_validateCommand(char* command){
+    if(strcmp(command,"GET")==0){
+        printf("El comando es GET\n");
+        return 1; //necesita un solo paramentro
+    }
+    if(strcmp(command,"SET")==0){
+        printf("El comando es SET\n");
+        return 2; //necesitan dos paramentros
+    }
+    if(strcmp(command,"LIST")==0){
+        printf("El comando es LIST\n");
+        return 0; //no se necesitan paramentros
+    }
+    if(strcmp(command,"DEL")==0){
+        printf("El comando es DEL\n");
+        return 1; //necesita un solo paramentro
+    }
+    if(strcmp(command,"EXIT")==0){
+        printf("El comando es EXIT\n");
+        return 0; //no se necesitan paramentros
+    }
+    if(strcmp(command, "HELP")==0){
+        printf("El comando es HELP\n");
+        return 0; //no se necesitan paramentros
+    }
+    return -1; //error comando no reconocido
+
+}
+
+void cl_printError(int errorCode){
+    switch(errorCode){
+        case SUCCESS:
+            printf("Sin error\n");
+            break;
+        case INSUFFICIENT_MEMORY:
+            printf("Su sistema ya no tiene memoria\n");
+            break;
+        case PARSE_ERROR:
+            printf("Error de parseo: el comando no existe\n");
+            break;
+        case WRONG_ARGUMENT:
+            printf("La funcion recibio un mal argumento\n");
+            break;
+        case BIG_KEY:
+            printf("La clave es mayor que %ld bytes\n", (long)MAX_KEY_LENGTH);
+            break;
+        case BIG_VALUE:
+            printf("El valor es mayor que %ld bytes\n", (long)MAX_VALUE_LENGTH);
+            break;
+        case LACK_OF_ARGUMENT:
+            printf("Al comando le faltan argumentos\n");
+            break;
+    }
+}
+
+
+int cl_exec(int sock,char* command, dsString* key, dsString* value){
+    char server_reply[100];
+    if( send(sock , command , strlen(command) , 0) < 0)
+    {
+        return -1;
+    }
+    printf("envie: %s",command);
+    if(strcmp(command,"EXIT")==0){
+        
+        //cl_disconnect();
+        exit(0);
+    }
+    if(strcmp(command, "HELP")==0){
+        cl_printHelp();
+        return SUCCESS;
+    }
+    return SUCCESS;
 }
 
 /*
@@ -172,16 +255,16 @@ int cl_validateInput(List* input,instruction* parameters){
  * Retorna  0: error de conexion
  * Retorna > 0: el socket se creo con exito
  */
-int cl_connect(char *argv[]){
+int cl_connect(char* ip, char* puerto){
     int sock;
     struct sockaddr_in server;
     sock = socket(AF_INET , SOCK_STREAM , 0);
     if (sock < 0)
         return -1; //printf("ERROR al crear el socket\n");
 
-    server.sin_addr.s_addr = inet_addr(argv[1]);
+    server.sin_addr.s_addr = inet_addr(ip);
     server.sin_family = AF_INET;
-    server.sin_port = htons( atoi(argv[2]) );
+    server.sin_port = htons( atoi(puerto) );
     if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0)
         return 0; //fallo la conexion
 
@@ -199,15 +282,55 @@ char* cl_set(char* key, FILE* value){
 	printf(">\n" );
 	return NULL;
 }
-char* cl_list(){
-	return NULL;
+char* cl_list(int socket){
+    char comando[5] = "LIST";
+    char datosKeys[6000];
+    strcpy(datosKeys,comando);
+    send(socket,comando,sizeof(comando),0);
+    if (recv(socket,datosKeys,6000,0)<0){
+        puts("ALGO SUCEDIO EN EL SERVER");
+    }
+    puts(datosKeys);
+
 
 }
-char* cl_del(char* key){
-	return NULL;
+char* cl_del(char* key,int socket){
+    /*
+    char comando[7] = "DELETE";
+    char datos[100];
+    strcpy(datos,comando);
+    strcpy(datos,'')
+    strcpy(datos,key);
+    int valorConfirmacion;
+    send(socket,datos,sizeof(comando),0);
+    if (recv(socket,valorConfirmacion,sizeof(valorConfirmacion),0)<0)
+    {
+        puts("ALGO SUCEDIO EN EL SERVER");
+    }
+    puts("DATO EXITOSAMENTE ELIMINADO");
+    */
+    return NULL;
+
+	
 }
 
-int callMethod(int socket,instruction* parameters){
+void cl_help(){
+    /*
+    printf("GET KEY :OPERACION GET RETORNA EL VALOR ASOCIADO A DICHA CLAVE
+            SET KEY VALUE:ALMACENA EN MEMORIA LA CLAVE CON EL VALOR ASOCIADO:
+            EL VALOR PUEDE CONTENER CARACTERES
+            DELETE KEY:ELIMINA LA CLAVE CON SU VALOR ASOCIADO
+            LIST:RETORNA LA LISTA DE TODAS LAS CLAVES ASOCIADAS
+            EXIT:TERMINA LA CONEXION CON EL SERVIDOR Y POSTERIORMENTE TERMINA EJECUCION 
+            DEL PROGRAMA CLIENTE \n");
+    */
+    printf("ayuda\n");
+
+}
+
+
+
+/*int callMethod(int socket,instruction* parameters){
 
 	if(strcmp(parameters->command,"GET")==0){
 		printf("Se ejecuta GET <%s>\n",parameters->key);
@@ -240,9 +363,24 @@ int callMethod(int socket,instruction* parameters){
 	printf("Comando %s no reconocido\n", parameters->command);
 	return 0;
 
-}
+}*/
 //*******MODIFICAR EXIT*****///
 void cl_disconnect(int socket){
 	printf("Desconectar\n");
-	close(socket);
+	int valor ;
+    /*
+    int shutdiwn(socket,how)
+    Cierra la conexion del socket <socket> , The argument how especifica las siguientes acciones:
+    0 Stop to receiving data del socket. Si algun dato arriva al socket lo elimina
+    1 Stop de enviar datos al socket, todos los datos esperando por ser enviador se descartan
+    2 Detiene tanto la recepcion como la transmision
+
+    */
+    valor = shutdown(socket,2);
+    if (valor < 0){
+        printf("No se cerro correctamente el socket \n");
+
+    }
+    printf("socket correctamente cerrado \n");
+    exit(0);
 }

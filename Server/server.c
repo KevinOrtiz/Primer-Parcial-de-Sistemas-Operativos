@@ -58,20 +58,40 @@ void * worker(void* arg){
 			}else{
 				continue;
 			}
-			send(socket , message , strlen(message),0);
-			printf("sokect: %d, mensaje: %s\n", socket,message);
+			printf("Se Recibe, sokect: %d, mensaje: %s\n", socket,message);
+			send(socket , "OK" , strlen("OK"),0);
+			if(!strcmp(message,"EXIT"))
+				break;
+			
 		}
-
+		printf("Se Desconecto sokect: %d\n", socket);
 		pthread_mutex_lock(&mutex);
 		conectionTaking--; // libero este worker
-		if (conectionTaking < workNumbers && count>0){
-			pthread_cond_signal(&newConection_cv);
-		} 
 		pthread_mutex_unlock(&mutex);
 	}
 
 	return NULL;
 }
+
+int initServerSocket(int* socket_desc, char *argv[]){
+	struct sockaddr_in server , client;
+	int i;
+	//Create socket
+    *socket_desc = socket(AF_INET , SOCK_STREAM , 0);
+    if (*socket_desc == -1)
+        return 0;
+    //Prepare the sockaddr_in structure
+    server.sin_family = AF_INET;
+    server.sin_addr.s_addr = INADDR_ANY;
+    server.sin_port = htons( 9999 );
+    //Bind
+    if( bind(*socket_desc,(struct sockaddr *)&server , sizeof(server)) < 0)
+        return 0;
+    //Listen
+    listen(*socket_desc , 3);
+    return 1;
+}
+
 
 /*
 char *inputString(FILE* fp, size_t size){
@@ -101,60 +121,46 @@ char *inputString(FILE* fp, size_t size){
 
 int main(int argc , char *argv[]){
 
-
 	//BOSS
-	int socket_desc ,c;
-    struct sockaddr_in server , client;
-	int i;
-	//Create socket
-    socket_desc = socket(AF_INET , SOCK_STREAM , 0);
-    c = sizeof(struct sockaddr_in);
-    if (socket_desc == -1)
-    {
-        printf("no se pudo crear el socket...\n");
+	int socket_desc,val,i;
+	printf("Iniciando...\n");
+    val=initServerSocket(&socket_desc, argv);
+    printf("Iniciando...\n");
+    if(!val){
+    	printf("Error: Faltal no iniciar socket\n");
+    	return 0;
     }
-    //Prepare the sockaddr_in structure
-    server.sin_family = AF_INET;
-    server.sin_addr.s_addr = INADDR_ANY;
-    server.sin_port = htons( 9999 );
-    //Bind
-    if( bind(socket_desc,(struct sockaddr *)&server , sizeof(server)) < 0)
-    {
-        //print the error message
-        perror("ERROR, fallo el enlace\n");
-        return 1;
-    }
-    puts("bind done");
-
-    //Listen
-    listen(socket_desc , 3);
-    
-
+	printf("Iniciando...\n");
 	for(i=0; i< MAX; i++){
 		newSockets[i]=0;
 	}
-
+	printf("Iniciando...\n");
 	//create a thread pool
 	for(i=0; i< workNumbers; i++){
 		pthread_t p;
 		pthread_create(&p, NULL, worker, NULL);
 	}
-	//
-	puts("Esperando por clientes...");
+	printf("Servidor iniciado correctamente, esperando por conexiones...\n");
 	while (1) {
-		int client_sock;
-		
+		int client_sock,c;
+		struct sockaddr_in client;
+		c = sizeof(struct sockaddr_in);
 	    //accept connection from an incoming client
 	    client_sock = accept(socket_desc, (struct sockaddr *)&client, (socklen_t*)&c);
 	    if (client_sock < 0)
 	    {
-	        perror("No se acepto la conexion\n");
+	        printf("ERROR: No se acepto la conexion\n");
 	        continue;
 	    }
 
 		pthread_mutex_lock(&mutex);
 		if (conectionTaking == workNumbers){ //todos los workes estan ocupados
-			printf("Ya no hay hilos para atenderlo, se perdio la conexion con el cliente: %d\n", client_sock);
+			printf("ERROR:El servidor esta a su maxima capacidad, se perdio la conexion con el cliente: %d\n", client_sock);
+			pthread_mutex_unlock(&mutex);
+			continue;
+		}
+		if(count==MAX){
+			printf("ERROR:El servidor esta a su maxima capacidad, se perdio la conexion con el cliente: %d\n", client_sock);
 			pthread_mutex_unlock(&mutex);
 			continue;
 		}
