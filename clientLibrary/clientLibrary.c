@@ -286,6 +286,7 @@ int cl_get(int socket,dsString* key){
 
     return 1;
 }
+
 int cl_set(int socket,dsString* key,dsString* value){
     char server_reply[10];
     int read_size;
@@ -295,6 +296,7 @@ int cl_set(int socket,dsString* key,dsString* value){
     read_size = recv(socket , server_reply , 10 , 0);
     printf("Envie el Comando a el servidor: SET\n");
     sendKeyValue(socket,key,value);
+
 
     return 1;
 }
@@ -310,6 +312,7 @@ int cl_list(int socket){
    
     return 1;
 }
+
 
 int cl_del(int socket,dsString* key){
     char server_reply[10];
@@ -332,7 +335,6 @@ void cl_help(){
     printf("\tdel <key>\n");
     printf("\texit\n");
     printf("\thelp\n");
-
 }
 
 

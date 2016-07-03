@@ -21,12 +21,12 @@ int cl_get(int socket,dsString* key);
 int cl_set(int socket,dsString* key,dsString* value);
 int cl_list(int socket);
 int cl_del(int socket,dsString* key);
-//int callMethod(int socket,instruction* parameters);
+
 //*******MODIFICAR disconnect*****///
 int cl_disconnect(int socket);
 
 void cl_help();
-void cl_exit();
+
 void sendKey(int sock,dsString* key);
 void sendKeyValue(int sock,dsString* key,dsString* value);
 
