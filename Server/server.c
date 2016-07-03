@@ -5,6 +5,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h> //inet_addr
 #include <unistd.h>    //write
+#include "../datastructures/dsstring.h"
 
 #define workNumbers 2
 #define MAX 5

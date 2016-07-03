@@ -1,13 +1,6 @@
 #ifndef HEADER_FILE
 #include "dsstring.h"
 #include "constants.h"
-/*typedef struct instruction {
-	char command[5];
-	char key[MAXKEY];
-	List* value;
-}instruction;*/
-
-
 
 void cl_printHelp();
 int cl_inputString(FILE* fp, char* command, dsString* key, dsString* value);

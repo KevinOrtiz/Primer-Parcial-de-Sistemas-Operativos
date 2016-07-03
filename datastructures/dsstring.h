@@ -24,6 +24,10 @@ char* dsStringRemoveFirst(dsString *s);
 
 void dsStringDelete(dsString **s);
 
+void dsStringPrint(dsString *s);
+void dsStringPrintChunk(dsString *s);
+int dsStringSendChunkSocket(dsString *s,int sock);
+
 
 #endif	/* _DSSTRING_H */
 

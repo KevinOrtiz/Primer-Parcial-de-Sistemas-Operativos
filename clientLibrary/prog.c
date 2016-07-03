@@ -5,9 +5,9 @@
 #include <sys/socket.h>    //socket
 #include <arpa/inet.h> //inet_addr
 #include "clientLibrary.h"
-#include "dsstring.h"
+#include "../datastructures/dsstring.h"
 
-//  gcc -o prog prog.c clientLibrary.c dsstring.c dschunk.c
+//  gcc -o prog prog.c clientLibrary.c ../datastructures/dsstring.c ../datastructures/dschunk.c
 // ./prog < comandos.txt
 
 int main(int argc , char *argv[]){

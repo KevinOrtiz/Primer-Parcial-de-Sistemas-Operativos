@@ -7,7 +7,7 @@
 #include <sys/types.h>
 #include <arpa/inet.h>
 #include "clientLibrary.h"
-#include "dsstring.h"
+#include "../datastructures/dsstring.h"
 
 
 void cl_toUpper(char* string){
