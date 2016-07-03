@@ -1,6 +1,10 @@
 #include "dsstring.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <sys/socket.h>
+#include <arpa/inet.h> //inet_addr
+#include <unistd.h>    //write
+#include <string.h>
 
 
 dsString *dsStringNew(){
@@ -110,6 +114,28 @@ void dsStringPrintChunk(dsString *s){
         printf("%s", it->cont);
         printf("\n");
     }
+    
+}
+
+int dsStringSendChunkSocket(dsString *s,int sock){
+    dsChunk* it;
+    char server_reply[10];
+    int read_size;
+    for(it = s->header; it!=NULL ; it= it->next ){
+        char* aux;
+        aux=it->cont;
+        if(!strcmp(aux,""))
+            break;
+        if( send(sock , aux , strlen(aux) , 0) < 0){
+            return 0;
+        }
+        read_size = recv(sock , server_reply , 1000 , 0);
+        //printf("\nenvie: %s",aux);
+    }
+    if( send(sock , "<<<fin_cadena>>>" , strlen("<<<fin_cadena>>>") , 0) < 0) 
+        return 0;
+    read_size = recv(sock , server_reply , 1000 , 0);
+    return 1;
     
 }
 

@@ -11,34 +11,37 @@
 // ./prog < comandos.txt
 
 int main(int argc , char *argv[]){
-	int i;
+	int val;
     dsString* key;
     dsString* value;
     int sock;
 
     sock=cl_connect("127.0.0.1","9999");
-    printf("socket: %d\n",sock);
+    printf("\nsocket: %d",sock);
     key = dsStringNew();
     value = dsStringNew();
 	char* command = (char*)malloc(sizeof(char)*(MAX_COMMAND_LENGTH+ 1));
 
 	while(1){
-		printf("Command$: ");
+		printf("\nCommand$: ");
 	    int input = cl_inputString(stdin,command, key, value);
 	    if(input != SUCCESS){
 	    	cl_printError(input);
 	    	continue;
 	    }
-	    cl_exec(sock,command, key, value);
-
+	    val=cl_exec(sock,command, key, value);
+	    if(val==-1){
+	    	printf("\nERROR: No se pudo ejecutar el comando");
+	    	continue;
+	    }
 	    ///imprime
 	    if(!dsStringEmpty(key)){
-	    	printf("\nkey: ");
+	    	printf("key: ");
 		    dsStringPrint(key);
 	    }
 
 		if(!dsStringEmpty(value)){
-			printf("\nvalue: ");
+			printf("value: ");
 			dsStringPrint(value);
 		} 	
 

@@ -10,25 +10,6 @@
 #include "dsstring.h"
 
 
-/*
-typedef struct instruction {
-	char command[5];
-	char key[MAXKEY];
-	FILE* value;
-}instruction;
-*/
-
-
-void cl_printHelp(){
-	printf("Comands:\n");
-	printf("\tget <key>\n");
-	printf("\tset <key> <value>\n");
-	printf("\tlist\n");
-	printf("\tdel <key>\n");
-	printf("\texit\n");
-	printf("\thelp\n");
-}
-
 void cl_toUpper(char* string){
 
     while(*string!= '\0' ){
@@ -176,27 +157,27 @@ int cl_inputString(FILE* fp, char* command, dsString* key, dsString* value){
 //si es valido retorna el numero de argumentos que requiere
 int cl_validateCommand(char* command){
     if(strcmp(command,"GET")==0){
-        printf("El comando es GET\n");
+        //printf("El comando es GET\n");
         return 1; //necesita un solo paramentro
     }
     if(strcmp(command,"SET")==0){
-        printf("El comando es SET\n");
+        //printf("El comando es SET\n");
         return 2; //necesitan dos paramentros
     }
     if(strcmp(command,"LIST")==0){
-        printf("El comando es LIST\n");
+        //printf("El comando es LIST\n");
         return 0; //no se necesitan paramentros
     }
     if(strcmp(command,"DEL")==0){
-        printf("El comando es DEL\n");
+        //printf("El comando es DEL\n");
         return 1; //necesita un solo paramentro
     }
     if(strcmp(command,"EXIT")==0){
-        printf("El comando es EXIT\n");
+        //printf("El comando es EXIT\n");
         return 0; //no se necesitan paramentros
     }
     if(strcmp(command, "HELP")==0){
-        printf("El comando es HELP\n");
+        //printf("El comando es HELP\n");
         return 0; //no se necesitan paramentros
     }
     return -1; //error comando no reconocido
@@ -228,25 +209,47 @@ void cl_printError(int errorCode){
             break;
     }
 }
+void sendKey(int sock,dsString* key){
+    dsStringSendChunkSocket(key,sock);
+}
 
+void sendKeyValue(int sock,dsString* key,dsString* value){
+    dsStringSendChunkSocket(key,sock);
+    dsStringSendChunkSocket(value,sock);
+}
 
 int cl_exec(int sock,char* command, dsString* key, dsString* value){
-    char server_reply[100];
-    if( send(sock , command , strlen(command) , 0) < 0)
-    {
-        return -1;
-    }
-    printf("envie: %s",command);
-    if(strcmp(command,"EXIT")==0){
-        
-        //cl_disconnect();
-        exit(0);
-    }
+
     if(strcmp(command, "HELP")==0){
-        cl_printHelp();
+        cl_help();
         return SUCCESS;
     }
-    return SUCCESS;
+    if(strcmp(command,"GET")==0){
+        printf("se ejecuta GET\n");
+        cl_get(sock,key);
+        return SUCCESS;
+    }
+    if(strcmp(command,"SET")==0){
+        printf("se ejecuta SET\n");
+        cl_set(sock,key,value);
+        return SUCCESS; 
+    }
+    if(strcmp(command,"LIST")==0){
+        printf("se ejecuta LIST\n");
+        cl_list(sock);
+        return SUCCESS; 
+    }
+    if(strcmp(command,"DEL")==0){
+        printf("se ejecuta DEL\n");
+        cl_del(sock,key);
+        return SUCCESS;
+    }
+    if(strcmp(command,"EXIT")==0){
+        printf("se ejecuta EXIT\n");
+        cl_disconnect(sock);
+        return SUCCESS; 
+    }
+    return -1; 
 }
 
 /*
@@ -271,103 +274,78 @@ int cl_connect(char* ip, char* puerto){
 	return sock;
 }
 
-char* cl_get(char* key){
-	return NULL;
-}
-char* cl_set(char* key, FILE* value){
-	printf("<");
-	char c;
-	while(EOF != (c=fgetc(value)) && c!=' ')
-		printf("%c",c );
-	printf(">\n" );
-	return NULL;
-}
-char* cl_list(int socket){
-    char comando[5] = "LIST";
-    char datosKeys[6000];
-    strcpy(datosKeys,comando);
-    send(socket,comando,sizeof(comando),0);
-    if (recv(socket,datosKeys,6000,0)<0){
-        puts("ALGO SUCEDIO EN EL SERVER");
-    }
-    puts(datosKeys);
+int cl_get(int socket,dsString* key){
+    char server_reply[10];
+    int read_size;
 
+    if( send(socket , "GET", strlen("GET") , 0) < 0) 
+        return -1;
+    read_size = recv(socket , server_reply , 10 , 0);
+    printf("Envie el Comando a el servidor: GET\n");
+    sendKey(socket,key);
 
+    return 1;
 }
-char* cl_del(char* key,int socket){
-    /*
-    char comando[7] = "DELETE";
-    char datos[100];
-    strcpy(datos,comando);
-    strcpy(datos,'')
-    strcpy(datos,key);
-    int valorConfirmacion;
-    send(socket,datos,sizeof(comando),0);
-    if (recv(socket,valorConfirmacion,sizeof(valorConfirmacion),0)<0)
-    {
-        puts("ALGO SUCEDIO EN EL SERVER");
-    }
-    puts("DATO EXITOSAMENTE ELIMINADO");
-    */
-    return NULL;
+int cl_set(int socket,dsString* key,dsString* value){
+    char server_reply[10];
+    int read_size;
+    
+    if( send(socket , "SET", strlen("SET") , 0) < 0) 
+        return -1;
+    read_size = recv(socket , server_reply , 10 , 0);
+    printf("Envie el Comando a el servidor: SET\n");
+    sendKeyValue(socket,key,value);
 
-	
+    return 1;
+}
+
+int cl_list(int socket){
+    char server_reply[10];
+    int read_size;
+    
+    if( send(socket , "LIST", strlen("LIST") , 0) < 0) 
+        return -1;
+    read_size = recv(socket , server_reply , 10 , 0);
+    printf("Envie el Comando a el servidor: LIST\n");
+   
+    return 1;
+}
+
+int cl_del(int socket,dsString* key){
+    char server_reply[10];
+    int read_size;
+    
+    if( send(socket , "DEL", strlen("DEL") , 0) < 0) 
+        return -1;
+    read_size = recv(socket , server_reply , 10 , 0);
+    printf("Envie el Comando a el servidor: DEL\n");
+    sendKey(socket,key);
+    return 1;
+
 }
 
 void cl_help(){
-    /*
-    printf("GET KEY :OPERACION GET RETORNA EL VALOR ASOCIADO A DICHA CLAVE
-            SET KEY VALUE:ALMACENA EN MEMORIA LA CLAVE CON EL VALOR ASOCIADO:
-            EL VALOR PUEDE CONTENER CARACTERES
-            DELETE KEY:ELIMINA LA CLAVE CON SU VALOR ASOCIADO
-            LIST:RETORNA LA LISTA DE TODAS LAS CLAVES ASOCIADAS
-            EXIT:TERMINA LA CONEXION CON EL SERVIDOR Y POSTERIORMENTE TERMINA EJECUCION 
-            DEL PROGRAMA CLIENTE \n");
-    */
-    printf("ayuda\n");
+    printf("Comands:\n");
+    printf("\tget <key>\n");
+    printf("\tset <key> <value>\n");
+    printf("\tlist\n");
+    printf("\tdel <key>\n");
+    printf("\texit\n");
+    printf("\thelp\n");
 
 }
 
 
-
-/*int callMethod(int socket,instruction* parameters){
-
-	if(strcmp(parameters->command,"GET")==0){
-		printf("Se ejecuta GET <%s>\n",parameters->key);
-		cl_get(parameters->key);
-		return 0;
-	}
-	if(strcmp(parameters->command,"SET")==0){
-		printf("Se ejecuta SET <%s> ",parameters->key);
-		return 0;
-	}
-	if(strcmp(parameters->command,"LIST")==0){
-		printf("Se ejecuta LIST\n");
-		cl_list();
-		return 0;
-	}
-	if(strcmp(parameters->command,"DEL")==0){
-		printf("Se ejecuta DEL <%s>\n",parameters->key);
-		cl_del(parameters->key);
-		return 0;
-	}
-	if(strcmp(parameters->command,"EXIT")==0){
-		printf("Se ejecuta EXIT\n");
-		cl_disconnect(socket);
-		exit(0);
-	}
-	if(strcmp(parameters->command,"HELP")==0){
-		printHelp();
-		return 0;
-	}
-	printf("Comando %s no reconocido\n", parameters->command);
-	return 0;
-
-}*/
 //*******MODIFICAR EXIT*****///
-void cl_disconnect(int socket){
-	printf("Desconectar\n");
-	int valor ;
+int cl_disconnect(int socket){
+	char server_reply[10];
+    int read_size;
+
+    if( send(socket , "EXIT", strlen("EXIT") , 0) < 0) 
+        return -1;
+    read_size = recv(socket , server_reply , 10 , 0);
+	
+    //int valor ;
     /*
     int shutdiwn(socket,how)
     Cierra la conexion del socket <socket> , The argument how especifica las siguientes acciones:
@@ -376,11 +354,14 @@ void cl_disconnect(int socket){
     2 Detiene tanto la recepcion como la transmision
 
     */
+    /*
     valor = shutdown(socket,2);
     if (valor < 0){
         printf("No se cerro correctamente el socket \n");
 
     }
     printf("socket correctamente cerrado \n");
+    */
     exit(0);
+
 }

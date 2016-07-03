@@ -26,6 +26,86 @@ pthread_cond_t newConection_cv = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 //pthread_cond_wait 
 //pthread_cond_signal
+int commandNumArguments(char* command);
+void putNewSocket(int s);
+int getNewSocket();
+void* worker(void* arg);
+int initServerSocket(int* socket_desc, char *argv[]);
+void reciveAllChunks(int socket);
+
+int main(int argc , char *argv[]){
+
+	//BOSS
+	int socket_desc,val,i;
+    val=initServerSocket(&socket_desc, argv);
+    if(!val){
+    	printf("Error: Faltal no se puede iniciar el Servidor\n");
+    	return 0;
+    }
+	for(i=0; i< MAX; i++){
+		newSockets[i]=0;
+	}
+	//create a thread pool
+	for(i=0; i< workNumbers; i++){
+		pthread_t p;
+		pthread_create(&p, NULL, worker, NULL);
+	}
+	printf("Servidor iniciado correctamente, esperando Clientes...\n");
+	while (1) {
+		int client_sock,c;
+		struct sockaddr_in client;
+		c = sizeof(struct sockaddr_in);
+	    //accept connection from an incoming client
+	    client_sock = accept(socket_desc, (struct sockaddr *)&client, (socklen_t*)&c);
+	    if (client_sock < 0)
+	    {
+	        printf("ERROR: No se acepto la conexion\n");
+	        continue;
+	    }
+
+		pthread_mutex_lock(&mutex);
+		if (conectionTaking == workNumbers){ //todos los workes estan ocupados
+			printf("ERROR:El servidor esta a su maxima capacidad, se perdio la conexion con el cliente: %d\n", client_sock);
+			pthread_mutex_unlock(&mutex);
+			continue;
+		}
+		if(count==MAX){
+			printf("ERROR(count):El servidor esta a su maxima capacidad, se perdio la conexion con el cliente: %d\n", client_sock);
+			pthread_mutex_unlock(&mutex);
+			continue;
+		}
+		putNewSocket(client_sock);
+		pthread_cond_signal(&newConection_cv);
+		pthread_mutex_unlock(&mutex);
+
+
+	}
+
+
+}
+
+int commandNumArguments(char* command){
+    if(strcmp(command,"GET")==0){
+        return 1; //necesita un solo paramentro
+    }
+    if(strcmp(command,"SET")==0){
+        return 2; //necesitan dos paramentros
+    }
+    if(strcmp(command,"LIST")==0){
+        return 0; //no se necesitan paramentros
+    }
+    if(strcmp(command,"DEL")==0){
+        return 1; //necesita un solo paramentro
+    }
+    if(strcmp(command,"EXIT")==0){
+        return 0; //no se necesitan paramentros
+    }
+    if(strcmp(command, "HELP")==0){
+        return 0; //no se necesitan paramentros
+    }
+    return -1; //error comando no reconocido
+
+}
 
 void putNewSocket(int s){
 	newSockets[actual]=s;
@@ -39,10 +119,24 @@ int getNewSocket(){
 	count--;
 	return x;
 }
+void reciveAllChunks(int socket){
+	int read_size;
+	char chunk[1000];
+	while(1){//recibe todo los chunk de de clave o valor
+		read_size = recv(socket , chunk , 1000 , 0);
+		if(read_size>0) chunk[read_size]='\0';
+		send(socket , "OK" , strlen("OK"),0);
+		if(!strcmp(chunk,"<<<fin_cadena>>>"))
+			break;
+		printf("%s",chunk );
+		fflush(stdout);
+	}
+	printf("\n");
+}
 
 void * worker(void* arg){
 	int socket,read_size;
-	char message[1000];
+	char command[10];
 	while(1) {
 		pthread_mutex_lock(&mutex);
 		while (count == 0)
@@ -52,22 +146,28 @@ void * worker(void* arg){
 		pthread_mutex_unlock(&mutex);
 
 		while(1){// atiendo al cliente
-			read_size = recv(socket , message , 1000 , 0);
-			if(read_size>0){
-				message[read_size]='\0';
-			}else{
-				continue;
-			}
-			printf("Se Recibe, sokect: %d, mensaje: %s\n", socket,message);
+			read_size = recv(socket , command , 1000 , 0);
+			if(read_size>0) command[read_size]='\0';
+			else continue;
 			send(socket , "OK" , strlen("OK"),0);
-			if(!strcmp(message,"EXIT"))
+			printf("\nsokect: %d, comando: %s\n", socket,command);
+			if(!strcmp(command,"EXIT")){
 				break;
+			}
+			int num=commandNumArguments(command);
+			for(int i=0;i<num;i++){
+				if(i==0)
+					printf("Key:");
+				if(i==1)
+					printf("Value:");
+				reciveAllChunks(socket);
+			}
 			
 		}
-		printf("Se Desconecto sokect: %d\n", socket);
 		pthread_mutex_lock(&mutex);
 		conectionTaking--; // libero este worker
 		pthread_mutex_unlock(&mutex);
+		printf("Se Desconecto sokect: %d\n", socket);
 	}
 
 	return NULL;
@@ -90,87 +190,4 @@ int initServerSocket(int* socket_desc, char *argv[]){
     //Listen
     listen(*socket_desc , 3);
     return 1;
-}
-
-
-/*
-char *inputString(FILE* fp, size_t size){
- //The size is extended by the input with the value of the provisional 
-     if(!fp){
-     	return NULL;
-     }
-     char *str;
-     int ch;
-     size_t len = 0;
-     str = realloc(NULL, sizeof(char)*size);//size is start size
-     if(!str)return str;
- 
-     while(EOF!=(ch=fgetc(fp)) && ch != '\n'){  
-         str[len++]=ch;
-         if(len==size){
-             str = realloc(str, sizeof(char)*(size+=16));
-             if(!str)return str;
-         }
-     }
- 	str[len++]='\0';
- 	str = realloc(str, sizeof(char)*len);
- 
-     return str;
- }
-*/
-
-int main(int argc , char *argv[]){
-
-	//BOSS
-	int socket_desc,val,i;
-	printf("Iniciando...\n");
-    val=initServerSocket(&socket_desc, argv);
-    printf("Iniciando...\n");
-    if(!val){
-    	printf("Error: Faltal no iniciar socket\n");
-    	return 0;
-    }
-	printf("Iniciando...\n");
-	for(i=0; i< MAX; i++){
-		newSockets[i]=0;
-	}
-	printf("Iniciando...\n");
-	//create a thread pool
-	for(i=0; i< workNumbers; i++){
-		pthread_t p;
-		pthread_create(&p, NULL, worker, NULL);
-	}
-	printf("Servidor iniciado correctamente, esperando por conexiones...\n");
-	while (1) {
-		int client_sock,c;
-		struct sockaddr_in client;
-		c = sizeof(struct sockaddr_in);
-	    //accept connection from an incoming client
-	    client_sock = accept(socket_desc, (struct sockaddr *)&client, (socklen_t*)&c);
-	    if (client_sock < 0)
-	    {
-	        printf("ERROR: No se acepto la conexion\n");
-	        continue;
-	    }
-
-		pthread_mutex_lock(&mutex);
-		if (conectionTaking == workNumbers){ //todos los workes estan ocupados
-			printf("ERROR:El servidor esta a su maxima capacidad, se perdio la conexion con el cliente: %d\n", client_sock);
-			pthread_mutex_unlock(&mutex);
-			continue;
-		}
-		if(count==MAX){
-			printf("ERROR:El servidor esta a su maxima capacidad, se perdio la conexion con el cliente: %d\n", client_sock);
-			pthread_mutex_unlock(&mutex);
-			continue;
-		}
-		putNewSocket(client_sock);
-		pthread_cond_signal(&newConection_cv);
-		pthread_mutex_unlock(&mutex);
-
-
-	}
-
-
-
 }
