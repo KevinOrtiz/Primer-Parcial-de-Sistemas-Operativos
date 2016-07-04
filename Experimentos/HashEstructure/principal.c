@@ -5,25 +5,52 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdint.h>
 
-//No se recomienda declarar esta estructura en los archivos .C, hacerlo en los .h
+const uint32_t FNV_PRIME = 16777619;
+const uint32_t FNV_OFFSET_BASIS = 2166136261;
+
+uint32_t* Hashmap_fnv1a_hash(void *data);
+
 int main(){
     int numero = 1234;
-    HashmapNode *map = NULL;
+    char dato[50] = {'\0'}, *resultado;
+    Hashmap *map = NULL;
     uint32_t hash = 0;
-    char *nombre = "HOLA A TODOS";
-    //carro *bus = (carro *)malloc(sizeof(carro));
-    //strcpy(bus->nombre,"HOLA A TODOS");
-    //bus->placa = numero;
-    map = Hashmap_node_create(hash,numero,nombre);
-    //HashmapNode *nodo = (HashmapNode *)malloc(sizeof(HashmapNode));
-    //*(int *)map->key = bus->placa;
-    //*(char *)map->data = bus->nombre;
-    //printf("%d", bus->placa);
-    //printf("%s", bus->nombre);
-    printf("%d\n", map->key);
-    printf("%s\n", map->data);
+
+    strcpy(dato,"HOLA MUNDO");
+    map = Hashmap_create(NULL, NULL);
+    Hashmap_set(map, &numero, dato);
+
+    memset(dato,'\0',strlen(dato));
+    strcpy(dato,"QUE TAL");
+    numero++;
+    Hashmap_set(map, &numero, dato);
+
+    memset(dato,'\0',strlen(dato));
+    strcpy(dato,"HOLA DE NUEVO");
+    numero--;
+    Hashmap_set(map, &numero, dato);
+
+    numero = 1234;
+    resultado = (char *)Hashmap_get(map,&numero);
+    printf("%s\n", resultado);
+
     return 0;
 
 
+}
+
+uint32_t* Hashmap_fnv1a_hash(void *data)
+{
+    bstring s = (bstring)data;
+    uint32_t hash = FNV_OFFSET_BASIS;
+    int i = 0;
+
+    for(i = 0; i < blength(s); i++) {
+        hash ^= bchare(s, i, 0);
+        hash *= FNV_PRIME;
+    }
+
+    return hash;
 }

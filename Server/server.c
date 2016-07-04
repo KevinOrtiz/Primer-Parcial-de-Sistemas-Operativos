@@ -9,7 +9,7 @@
 
 #define workNumbers 2
 #define MAX 5
-//compilar gcc -o server server.c
+//compilar gcc -o server server.c -pthread
 //ejecutar: ./server < entradas.txt > log.txt
 
 //arrego de enteros
@@ -25,7 +25,7 @@ int ban=1;
 pthread_cond_t newConection_cv = PTHREAD_COND_INITIALIZER;
 //mutex
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-//pthread_cond_wait 
+//pthread_cond_wait
 //pthread_cond_signal
 int commandNumArguments(char* command);
 void putNewSocket(int s);
@@ -136,7 +136,7 @@ void reciveAllChunks(int socket){
 }
 
 void * worker(void* arg){
-	int socket,read_size;
+	int socket,read_size, i;
 	char command[10];
 	while(1) {
 		pthread_mutex_lock(&mutex);
@@ -156,14 +156,14 @@ void * worker(void* arg){
 				break;
 			}
 			int num=commandNumArguments(command);
-			for(int i=0;i<num;i++){
+			for(i=0;i<num;i++){
 				if(i==0)
 					printf("Key:");
 				if(i==1)
 					printf("Value:");
 				reciveAllChunks(socket);
 			}
-			
+
 		}
 		pthread_mutex_lock(&mutex);
 		conectionTaking--; // libero este worker
