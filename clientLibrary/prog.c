@@ -16,7 +16,16 @@ int main(int argc , char *argv[]){
     dsString* value;
     int sock;
 
-    sock=cl_connect("127.0.0.1","9999");
+    if(argc <= 2){
+    	printf("Error: Faltan argumentos\n");
+    	return 0;
+    }
+
+
+    sock=cl_connect(argv[1], argv[2]);
+    if(!sock){
+    	return 0;
+    }
     printf("\nsocket: %d",sock);
     key = dsStringNew();
     value = dsStringNew();
