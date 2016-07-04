@@ -12,7 +12,7 @@ dsString *dsStringNew(){
     newString->header = NULL;
     newString->last = NULL;
     newString->countChar = 0;
-    return newString; 
+    return newString;
 }
 
 int dsStringEmpty(dsString *s){
@@ -114,7 +114,7 @@ void dsStringPrintChunk(dsString *s){
         printf("%s", it->cont);
         printf("\n");
     }
-    
+
 }
 
 int dsStringSendChunkSocket(dsString *s,int sock){
@@ -132,11 +132,29 @@ int dsStringSendChunkSocket(dsString *s,int sock){
         read_size = recv(sock , server_reply , 1000 , 0);
         //printf("\nenvie: %s",aux);
     }
-    if( send(sock , "<<<fin_cadena>>>" , strlen("<<<fin_cadena>>>") , 0) < 0) 
+    if( send(sock , "<<<fin_cadena>>>" , strlen("<<<fin_cadena>>>") , 0) < 0)
         return 0;
     read_size = recv(sock , server_reply , 1000 , 0);
     return 1;
-    
+
+}
+
+int dsStringCmp(void *a, void *b)
+{
+    //*a es la clave que esta en el hash y *b es la clave que voy a comparar
+    dsString *hashKey, *newKey;
+    hashKey = (dsString *)a;
+    newKey = (dsString *)b;
+    dsChunk* iterador1, *iterador2;
+    int resultado;
+    //si son de diferentes longitudes, entonces no es necesario comparar
+    if( hashKey->countChar != newKey->countChar ) return -1;
+
+    for( iterador1 = hashKey->header , iterador2 = newKey->header ; iterador1 != NULL && iterador2 != NULL ; iterador1 = iterador1->next , iterador2 = iterador2->next  ){
+        resultado = strcmp(iterador1->cont,iterador2->cont);
+        if(resultado != 0) return 1;//no son iguales
+    }
+    return 0;//son iguales
 }
 
 

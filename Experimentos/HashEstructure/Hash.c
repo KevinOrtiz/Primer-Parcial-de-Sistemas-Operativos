@@ -146,7 +146,7 @@ static inline int Hashmap_get_node(Hashmap * map, uint32_t hash,
     int i = 0;
 
     for (i = 0; i < DArray_end(bucket); i++) {
-        debug("TRY: %d", i);
+        //debug("TRY: %d", i);
         HashmapNode *node = DArray_get(bucket, i);
         if (node->hash == hash && map->compare(node->key, key) == 0) {
             return i;

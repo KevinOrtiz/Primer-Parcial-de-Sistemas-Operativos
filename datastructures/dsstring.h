@@ -17,7 +17,7 @@ int dsStringEmpty(dsString *s);
 char* dsStringGetHeader(dsString *s);
 char* dsStringGetLast(dsString *s);
 void dsStringAdd(dsString *s, char* cont);
-void dsStringAddFirst(dsString *s, char* cont);                                                                                                                                                                                                                                                                                                                                                                       
+void dsStringAddFirst(dsString *s, char* cont);
 
 int dsStringAddChar(dsString* s, char c);
 char* dsStringRemoveFirst(dsString *s);
@@ -27,7 +27,7 @@ void dsStringDelete(dsString **s);
 void dsStringPrint(dsString *s);
 void dsStringPrintChunk(dsString *s);
 int dsStringSendChunkSocket(dsString *s,int sock);
-
+int dsStringCmp(void *a, void *b);
 
 #endif	/* _DSSTRING_H */
 
