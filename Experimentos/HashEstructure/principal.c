@@ -9,27 +9,27 @@
 
 const uint32_t FNV_PRIME = 16777619;
 const uint32_t FNV_OFFSET_BASIS = 2166136261;
-
-uint32_t* Hashmap_fnv1a_hash(void *data);
+static uint32_t Hashmap_fnv1a_hash(void *data);
 
 int main(){
-    int numero = 1234;
+    int numero;
     char dato[50] = {'\0'}, *resultado;
     Hashmap *map = NULL;
     uint32_t hash = 0;
 
+    map = Hashmap_create(NULL, Hashmap_fnv1a_hash);
     strcpy(dato,"HOLA MUNDO");
-    map = Hashmap_create(NULL, NULL);
+    numero = 1234;
     Hashmap_set(map, &numero, dato);
 
     memset(dato,'\0',strlen(dato));
     strcpy(dato,"QUE TAL");
-    numero++;
+    numero = 1235;
     Hashmap_set(map, &numero, dato);
 
     memset(dato,'\0',strlen(dato));
     strcpy(dato,"HOLA DE NUEVO");
-    numero--;
+    numero = 1236;
     Hashmap_set(map, &numero, dato);
 
     numero = 1234;
@@ -41,7 +41,7 @@ int main(){
 
 }
 
-uint32_t* Hashmap_fnv1a_hash(void *data)
+static uint32_t Hashmap_fnv1a_hash(void *data)
 {
     bstring s = (bstring)data;
     uint32_t hash = FNV_OFFSET_BASIS;
