@@ -4,17 +4,17 @@
 #include <string.h>    //strlen
 #include <sys/socket.h>
 #include <arpa/inet.h> //inet_addr
-#include <unistd.h>    //write
+#include <unistd.h>    //write, close
 #include "../datastructures/dsstring.h"
 
 #define workNumbers 2
 #define MAX 5
 //compilar gcc -o server server.c -pthread
-//ejecutar: ./server < entradas.txt > log.txt
+//ejecutar: ./server
 
-//arrego de enteros
 int conectionTaking = 0; //numero de conexiones atendidas
 int newSocket=0;
+//arrego de enteros
 int newSockets[MAX];
 int actual=0;
 int first=0;
@@ -25,20 +25,30 @@ int ban=1;
 pthread_cond_t newConection_cv = PTHREAD_COND_INITIALIZER;
 //mutex
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-//pthread_cond_wait
-//pthread_cond_signal
+
+
 int commandNumArguments(char* command);
 void putNewSocket(int s);
 int getNewSocket();
 void* worker(void* arg);
-int initServerSocket(int* socket_desc, char *argv[]);
+int initServerSocket(int* socket_desc, int port);
 void reciveAllChunks(int socket);
 
 int main(int argc , char *argv[]){
 
+
+	if(argc<=1){
+		printf("Error fatal: especifique un puerto\n");
+		return 0;
+	}
+	int port = atoi(argv[1]);
+	if(!port){
+		printf("Error fatal: puerto incorrecto\n");
+		return 0;
+	}
 	//BOSS
 	int socket_desc,val,i;
-    val=initServerSocket(&socket_desc, argv);
+    val=initServerSocket(&socket_desc, port);
     if(!val){
     	printf("Error: Faltal no se puede iniciar el Servidor\n");
     	return 0;
@@ -115,7 +125,7 @@ void putNewSocket(int s){
 }
 
 int getNewSocket(){
-	int x=newSockets[first];
+	int x = newSockets[first];
 	first=(first+1)%MAX;
 	count--;
 	return x;
@@ -147,12 +157,18 @@ void * worker(void* arg){
 		pthread_mutex_unlock(&mutex);
 
 		while(1){// atiendo al cliente
-			read_size = recv(socket , command , 1000 , 0);
-			if(read_size>0) command[read_size]='\0';
-			else continue;
+			read_size = recv(socket , command , 10, 0);
+			if(read_size>0){
+				command[read_size]='\0';	
+			} 
+			else{
+				close(socket);
+				break;	
+			} 
 			send(socket , "OK" , strlen("OK"),0);
 			printf("\nsokect: %d, comando: %s\n", socket,command);
 			if(!strcmp(command,"EXIT")){
+				close(socket);
 				break;
 			}
 			int num=commandNumArguments(command);
@@ -174,7 +190,7 @@ void * worker(void* arg){
 	return NULL;
 }
 
-int initServerSocket(int* socket_desc, char *argv[]){
+int initServerSocket(int* socket_desc, int port){
 	struct sockaddr_in server , client;
 	int i;
 	//Create socket
@@ -184,7 +200,7 @@ int initServerSocket(int* socket_desc, char *argv[]){
     //Prepare the sockaddr_in structure
     server.sin_family = AF_INET;
     server.sin_addr.s_addr = INADDR_ANY;
-    server.sin_port = htons( 9999 );
+    server.sin_port = htons( port );
     //Bind
     if( bind(*socket_desc,(struct sockaddr *)&server , sizeof(server)) < 0)
         return 0;
