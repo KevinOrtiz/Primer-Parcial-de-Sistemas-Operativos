@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <arpa/inet.h>
+#include <unistd.h> 
 #include "clientLibrary.h"
 #include "../datastructures/dsstring.h"
 
@@ -70,7 +71,10 @@ int cl_inputString(FILE* fp, char* command, dsString* key, dsString* value){
     //comando no reconocido
     if(numArgs<0){
         //limpiar buffer
-        while(EOF!=(ch=fgetc(fp)) && ch!='\n');
+        
+        while(EOF!=ch && ch!='\n'){
+            ch=fgetc(fp);
+        };
         
         return PARSE_ERROR;
     }
@@ -271,7 +275,24 @@ int cl_connect(char* ip, char* puerto){
     if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0)
         return 0; //fallo la conexion
 
-	return sock;
+    char command[20];
+    int read_size = recv(sock , command , 20, 0);
+    if(read_size>0){
+        command[read_size]='\0';    
+    } 
+    else{
+        close(sock);
+        return 0; 
+    } 
+    if(strcmp(command, "CONECTION_OK")==0){
+        return sock;
+    }
+    if(strcmp(command, "CONECTION_NK")==0){
+        printf("Error: servidor ocupado\n");
+        close(sock);
+        return 0;
+    }
+    return 0;
 }
 
 int cl_get(int socket,dsString* key){
