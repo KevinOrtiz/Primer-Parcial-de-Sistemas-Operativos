@@ -9,7 +9,7 @@
 
 #define workNumbers 2
 #define MAX 5
-//compilar gcc -o server server.c -pthread
+//compilar gcc -o server server.c
 //ejecutar: ./server
 
 int conectionTaking = 0; //numero de conexiones atendidas
@@ -148,6 +148,7 @@ void reciveAllChunks(int socket){
 void * worker(void* arg){
 	int socket,read_size, i;
 	char command[10];
+	dsString *key,*value;
 	while(1) {
 		pthread_mutex_lock(&mutex);
 		while (count == 0)
