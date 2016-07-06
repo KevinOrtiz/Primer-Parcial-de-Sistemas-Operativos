@@ -147,8 +147,7 @@ int dsStringCmp(void *a, void *b)
     newKey = (dsString *)b;
     dsChunk* iterador1, *iterador2;
     int resultado;
-    //si son de diferentes longitudes, entonces no es necesario comparar
-    if( hashKey->countChar != newKey->countChar ) return -1;
+    
 
     for( iterador1 = hashKey->header , iterador2 = newKey->header ; iterador1 != NULL && iterador2 != NULL ; iterador1 = iterador1->next , iterador2 = iterador2->next  ){
         resultado = strcmp(iterador1->cont,iterador2->cont);
