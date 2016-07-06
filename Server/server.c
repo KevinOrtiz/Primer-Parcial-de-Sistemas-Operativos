@@ -178,12 +178,12 @@ int exec(int socket,char * command, dsString* key, dsString* value){
         printf("Se ejecuta get\n");
 
         value = (dsString *)Hashmap_get(map, key);
-        if(value<0){
-        	printf("erro\n");
+        if(value){
+        	printf("Bien\n");
+        	dsStringPrint(value);
         	return -1;
         }
-        dsStringPrint(value);
-        printf("\n");
+        
         return 1; //necesita un solo paramentro
     }
     if(strcmp(command,"SET")==0){
@@ -250,8 +250,7 @@ void * worker(void* arg){
 			}
 
 			exec(socket,command,key,value);
-			dsStringDelete(&key);
-			dsStringDelete(&value);
+			printf("PILAS\n");
 
 		}
 		
