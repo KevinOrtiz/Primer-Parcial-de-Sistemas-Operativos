@@ -26,7 +26,7 @@ int main(){
 	while(inputString(stdin, s)){
 			dsChunk* it;
 			for(it = s->header; it!=NULL ; it= it->next ){
-				printf("%s\n", it->cont);
+				printf("__%s__", it->cont);
 			} 	
 			printf("\n");
 			dsStringDelete(&s);

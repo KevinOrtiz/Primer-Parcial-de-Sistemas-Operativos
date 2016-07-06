@@ -5,11 +5,14 @@
 #include <sys/socket.h>
 #include <arpa/inet.h> //inet_addr
 #include <unistd.h>    //write, close
+#include "constants.h"
+#include "bstrlib.h"
+#include "Hash.h"
 #include "../datastructures/dsstring.h"
 
 #define workNumbers 2
 #define MAX 5
-//compilar gcc -o server server.c -pthread
+//compilar gcc -o server server.c Hash.c bstrlib.c darray.c ../datastructures/dsstring.c ../datastructures/dschunk.c
 //ejecutar: ./server
 
 int conectionTaking = 0; //numero de conexiones atendidas
@@ -21,12 +24,15 @@ int first=0;
 int count=0;
 int ban=1;
 
+//hashMap
+Hashmap *map;
+
 //variables de condicion
 pthread_cond_t newConection_cv = PTHREAD_COND_INITIALIZER;
 //mutex
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
-
+static uint32_t Hashmap_djb2_hash(void *data); //funcion de hash
 int commandNumArguments(char* command);
 void putNewSocket(int s);
 int getNewSocket();
@@ -46,6 +52,9 @@ int main(int argc , char *argv[]){
 		printf("Error fatal: puerto incorrecto\n");
 		return 0;
 	}
+	//create a hash
+	map = Hashmap_create(dsStringCmp, Hashmap_djb2_hash);
+
 	//BOSS
 	int socket_desc,val,i;
     val=initServerSocket(&socket_desc, port);
@@ -78,13 +87,25 @@ int main(int argc , char *argv[]){
 		if (conectionTaking == workNumbers){ //todos los workes estan ocupados
 			printf("ERROR:El servidor esta a su maxima capacidad, se perdio la conexion con el cliente: %d\n", client_sock);
 			pthread_mutex_unlock(&mutex);
+			//enviarle ese mensaje al cliente
+			send(client_sock, "CONECTION_NK", strlen("CONECTION_NK"),0);
+			close(client_sock);
+
 			continue;
 		}
 		if(count==MAX){
 			printf("ERROR(count):El servidor esta a su maxima capacidad, se perdio la conexion con el cliente: %d\n", client_sock);
 			pthread_mutex_unlock(&mutex);
+
+			//enviarle ese mensaje al cliente
+			send(client_sock, "CONECTION_NK", strlen("CONECTION_NK"),0);
+			close(client_sock);
+
 			continue;
 		}
+		//confirma coneccion
+		send(client_sock, "CONECTION_OK", strlen("CONECTION_OK"),0);
+
 		putNewSocket(client_sock);
 		pthread_cond_signal(&newConection_cv);
 		pthread_mutex_unlock(&mutex);
@@ -145,6 +166,44 @@ void reciveAllChunks(int socket){
 	printf("\n");
 }
 
+int exec(int socket,char * command, dsString* key, dsString* value){
+
+	if(!command)
+		return WRONG_ARGUMENT;
+
+	if(strcmp(command,"GET")==0){
+        printf("Se ejecuta get");
+
+        value = (dsString *)Hashmap_get(map, key);
+        if(value){
+        	dsStringPrint(value);
+        }
+
+        return 1; //necesita un solo paramentro
+    }
+    if(strcmp(command,"SET")==0){
+    	printf("Se ejecuta set");
+    	int result = Hashmap_set(map, key, value);
+    
+    	if(result<0){
+    		return INSUFFICIENT_MEMORY;
+    	}
+
+        return SUCCESS; //necesitan dos paramentros
+    }
+    if(strcmp(command,"LIST")==0){
+    	printf("Se ejecuta list");
+        return 0; //no se necesitan paramentros
+    }
+    if(strcmp(command,"DEL")==0){
+    	printf("se ejecuta del");
+        return 1; //necesita un solo paramentro
+    }
+
+	return WRONG_ARGUMENT;
+}
+
+
 void * worker(void* arg){
 	int socket,read_size, i;
 	char command[10];
@@ -180,7 +239,11 @@ void * worker(void* arg){
 				reciveAllChunks(socket);
 			}
 
+			//exec(command, );
+
 		}
+		
+
 		pthread_mutex_lock(&mutex);
 		conectionTaking--; // libero este worker
 		pthread_mutex_unlock(&mutex);
@@ -207,4 +270,27 @@ int initServerSocket(int* socket_desc, int port){
     //Listen
     listen(*socket_desc , 3);
     return 1;
+}
+
+
+
+static uint32_t Hashmap_djb2_hash(void *data)
+{
+
+    dsString* s = (dsString*)data;
+    unsigned long hash = 5381;
+
+    dsChunk* it;
+
+    for(it=s->header; it !=NULL; it=it->next){
+        char * str = it->cont;
+
+        while (*str!= '\0'){
+            hash = ((hash << 5) + hash) + *str;
+            str++;
+        }     
+
+    }
+
+    return hash;
 }

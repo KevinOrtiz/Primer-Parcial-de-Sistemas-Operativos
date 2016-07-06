@@ -4,11 +4,11 @@
 #include "dschunk.h"
 
 
-#define CHUNK_LENGTH 20
+#define CHUNK_LENGTH 20 //numero de bytes
 //data structure String
 typedef struct dsString{
     dsChunk *header, *last;
-    int countChar;
+    int countChar; //referencia al ultimo char
 }dsString;
 
 

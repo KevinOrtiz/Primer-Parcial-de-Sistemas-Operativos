@@ -9,8 +9,6 @@
 #include "../../datastructures/dsstring.h"
 
 static uint32_t Hashmap_djb2_hash(void *data);
-const uint32_t FNV_PRIME = 16777619;
-const uint32_t FNV_OFFSET_BASIS = 2166136261;
 // gcc -o programa principal.c Hash.c bstrlib.c darray.c ../../datastructures/dsstring.c ../../datastructures/dschunk.c
 
 int main(){
