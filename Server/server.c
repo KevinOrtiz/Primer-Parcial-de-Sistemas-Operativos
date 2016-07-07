@@ -40,7 +40,7 @@ int getNewSocket();
 void* worker(void* arg);
 int initServerSocket(int* socket_desc, int port);
 int exec(int socket,char * command, dsString* key, dsString* value);
-void getResultList(int socket);
+int getResultList(int socket);
 
 int main(int argc , char *argv[]){
 
@@ -118,11 +118,13 @@ int main(int argc , char *argv[]){
 
 }
 
-void getResultList(int socket){
+int getResultList(int socket){
 	DArray *array,*bucket;
 	//DArray *response;
 	array=map->buckets;
 	HashmapNode *n;
+	char server_reply[10];
+	int read_size;
 	//response=DArray_create(sizeof(dsString*),DEFAULT_EXPAND_RATE);
 	printf("*****RESULTADOS DEL LIST*****\n");
 	for (int i = 0; i < DEFAULT_NUMBER_OF_BUCKETS; ++i){
@@ -138,9 +140,17 @@ void getResultList(int socket){
 			//printf("\ncubeta: %d, pos: %d, Key: ",i,j);
 			printf("key: ");
 			dsStringPrint(n->key);
+			dsStringSendChunkSocket(n->key,socket);
 			//DArray_push(response,n->key);
 		}
 	}
+	if( send(socket , "<<<fin_keys>>>" , strlen("<<<fin_keys>>>") , 0) < 0) return -1;
+	read_size = recv(socket , server_reply , 10 , 0);
+    server_reply[read_size]='\0';
+    if(strcmp(server_reply,"OK")){
+        return -1;
+    }
+	return SUCCESS;
 }
 
 int commandNumArguments(char* command){
@@ -210,9 +220,8 @@ int exec(int socket,char * command, dsString* key, dsString* value){
         return SUCCESS; 
     }
     if(strcmp(command,"LIST")==0){
-    	getResultList(socket);
     	printf("Se ejecuta list\n");
-        return SUCCESS; 
+    	return getResultList(socket);
     }
     if(strcmp(command,"DEL")==0){
     	printf("se ejecuta del\n");

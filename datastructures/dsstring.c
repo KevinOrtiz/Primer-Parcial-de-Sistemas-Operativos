@@ -212,3 +212,36 @@ int reciveAllChunksPrint(int socket){
     return 1;
 }
 
+int reciveAllKeysPrint(int socket){
+    int read_size;
+    char chunk[CHUNK_LENGTH+1];
+    int i=0;
+    //printf("RECIBE ALL KEYS PRINT");
+    printf("\t\tKEYS\n");
+    while(1){
+        while(1){//recibe todo los chunk de de clave o valor
+            i++;
+            read_size = recv(socket , chunk , CHUNK_LENGTH+1, 0);
+            if(read_size>0) 
+                chunk[read_size]='\0';
+            else{
+                send(socket , "ERROR" , strlen("ERROR"),0);
+                return -1;
+            }
+            send(socket , "OK" , strlen("OK"),0);
+            if(!strcmp(chunk,"<<<fin_cadena>>>"))
+                break;
+            if(!strcmp(chunk,"<<<fin_keys>>>"))
+                break;
+            printf("%s",chunk);
+            fflush(stdout);
+        }
+        printf("\n");
+        if(!strcmp(chunk,"<<<fin_keys>>>"))
+            break;
+    }
+    return 1;
+}
+
+
+

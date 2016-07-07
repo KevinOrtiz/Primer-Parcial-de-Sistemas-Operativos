@@ -412,8 +412,7 @@ int reciveResponse(char* command,int sock){
         return 1; //necesitan dos paramentros
     }
     if(strcmp(command,"LIST")==0){
-        
-        return 1; //no se necesitan paramentros
+        return reciveAllKeysPrint(sock);
     }
     if(strcmp(command,"DEL")==0){
         //printf("El comando es DEL\n");

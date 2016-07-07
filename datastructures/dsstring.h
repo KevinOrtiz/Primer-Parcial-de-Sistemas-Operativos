@@ -30,6 +30,7 @@ int dsStringSendChunkSocket(dsString *s,int sock);
 int dsStringCmp(void *a, void *b);
 int reciveAllChunks(int socket,dsString *s);
 int reciveAllChunksPrint(int socket);
+int reciveAllKeysPrint(int socket);
 
 #endif	/* _DSSTRING_H */
 
