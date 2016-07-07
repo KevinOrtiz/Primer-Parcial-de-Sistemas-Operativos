@@ -194,6 +194,8 @@ int getNewSocket(){
 
 int exec(int socket,char * command, dsString* key, dsString* value){
 	DArray *list;
+	int read_size;
+	char server_reply[10];
 	if(!command)
 		return WRONG_ARGUMENT;
 	if(strcmp(command,"GET")==0){
@@ -205,6 +207,11 @@ int exec(int socket,char * command, dsString* key, dsString* value){
         	return dsStringSendChunkSocket(value,socket);	
         }
         if( send(socket , "<<<fin_cadena>>>" , strlen("<<<fin_cadena>>>") , 0) < 0) return -1;
+        read_size = recv(socket , server_reply , 10 , 0);
+	    server_reply[read_size]='\0';
+	    if(strcmp(server_reply,"OK")){
+	        return -1;
+	    }
       	return SUCCESS; 
     }
     if(strcmp(command,"SET")==0){
