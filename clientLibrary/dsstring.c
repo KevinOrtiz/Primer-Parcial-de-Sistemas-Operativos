@@ -105,7 +105,6 @@ void dsStringPrint(dsString *s){
     for(it = s->header; it!=NULL ; it= it->next ){
         printf("%s", it->cont);
     }
-    printf("\n");
 }
 
 void dsStringPrintChunk(dsString *s){
@@ -206,7 +205,7 @@ int reciveAllChunksPrint(int socket){
         i++;
     }
     if(i==0){
-      printf("no hay valor\n");
+      printf("\n");
       return 1; 
     }
     return 1;

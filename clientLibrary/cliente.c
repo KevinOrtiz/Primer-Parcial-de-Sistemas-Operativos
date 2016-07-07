@@ -5,13 +5,13 @@
 #include <sys/socket.h>    //socket
 #include <arpa/inet.h> //inet_addr
 #include "clientLibrary.h"
-#include "../datastructures/dsstring.h"
+#include "dsstring.h"
 
-//  gcc -o prog prog.c clientLibrary.c ../datastructures/dsstring.c ../datastructures/dschunk.c
-// ./prog < comandos.txt
+//  gcc -o cliente cliente.c clientLibrary.c dsstring.c dschunk.c
+// ./cliente < comandos.txt
 
 int main(int argc , char *argv[]){
-	int val;
+	int val,val2;
     dsString* key;
     dsString* value;
     int sock;
@@ -26,7 +26,6 @@ int main(int argc , char *argv[]){
     if(!sock){
     	return 0;
     }
-    printf("\nsocket: %d",sock);
     key = dsStringNew();
     value = dsStringNew();
 	char* command = (char*)malloc(sizeof(char)*(MAX_COMMAND_LENGTH+ 1));
@@ -54,11 +53,23 @@ int main(int argc , char *argv[]){
 	    	continue;
 	    }
 	    ///imprime
-	    if(!dsStringEmpty(key)){
-	    	printf("key: ");
+	    if(!dsStringEmpty(key) && !strcmp(command,"GET")){
 		    dsStringPrint(key);
+		    printf("=");
 	    }
-	    reciveResponse(command,sock);
+	    val2=reciveResponse(command,sock);
+	    if(val2==-1){
+	    	printf("ERROR: no se pudo recibir la respuesta\n");
+	    	dsStringDelete(&key);
+	        dsStringDelete(&value);
+	        
+	        key = dsStringNew();
+	        value = dsStringNew();
+	    	continue;
+	    }
+	    if(!strcmp(command,"SET") || !strcmp(command,"DEL"))
+	    	printf("OK");
+
 	    /*
 		if(!dsStringEmpty(value)){
 			printf("value: ");

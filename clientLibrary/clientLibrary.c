@@ -258,24 +258,19 @@ int cl_exec(int sock,char* command, dsString* key, dsString* value){
         return SUCCESS;
     }
     if(strcmp(command,"GET")==0){
-        printf("se ejecuta GET\n");
         return cl_get(sock,key);
     }
     if(strcmp(command,"SET")==0){
-        printf("se ejecuta SET\n");
         return cl_set(sock,key,value);
     }
     if(strcmp(command,"LIST")==0){
-        printf("se ejecuta LIST\n");
         return cl_list(sock); 
     }
     if(strcmp(command,"DEL")==0){
-        printf("se ejecuta DEL\n");
         cl_del(sock,key);
         return SUCCESS;
     }
     if(strcmp(command,"EXIT")==0){
-        printf("se ejecuta EXIT\n");
         return cl_disconnect(sock); 
     }
     return -1; 
@@ -330,7 +325,6 @@ int cl_get(int socket,dsString* key){
     server_reply[read_size]='\0';
     if(strcmp(server_reply,"OK"))
         return -1;
-    printf("Envie el Comando a el servidor: GET\n");
     return sendKey(socket,key);
 }
 
@@ -344,7 +338,6 @@ int cl_set(int socket,dsString* key,dsString* value){
     server_reply[read_size]='\0';
     if(strcmp(server_reply,"OK"))
         return -1;
-    printf("Envie el Comando a el servidor: SET\n");
     return sendKeyValue(socket,key,value);
 }
 
@@ -356,11 +349,8 @@ int cl_list(int socket){
         return -1;
     read_size = recv(socket , server_reply , 2 , 0);
     server_reply[read_size]='\0';
-    printf("****************%s\n", server_reply);
     if(strcmp(server_reply,"OK"))
         return -1;
-    printf("Envie el Comando a el servidor: LIST\n");
-   
     return SUCCESS;
 }
 
@@ -375,7 +365,6 @@ int cl_del(int socket,dsString* key){
     server_reply[read_size]='\0';
     if(strcmp(server_reply,"OK"))
         return -1;
-    printf("Envie el Comando a el servidor: DEL\n");
     return sendKey(socket,key);
 
 }
@@ -426,7 +415,6 @@ int reciveResponse(char* command,int sock){
     char server_reply[10];
     int read_size;
     if(strcmp(command,"GET")==0){
-        printf("Value: ");
         return reciveAllChunksPrint(sock);
     }
     if(strcmp(command,"SET")==0){
@@ -435,7 +423,6 @@ int reciveResponse(char* command,int sock){
         if(strcmp(server_reply,"OK")){
             return -1;
         }
-        printf("########CONFIRMARION: %s\n",server_reply );
         return 1; //necesitan dos paramentros
     }
     if(strcmp(command,"LIST")==0){
@@ -448,7 +435,6 @@ int reciveResponse(char* command,int sock){
         if(strcmp(server_reply,"OK")){
             return -1;
         }
-        printf("########CONFIRMARION: %s\n",server_reply );
         return 1; //necesita un solo paramentro
     }
     return 1;
