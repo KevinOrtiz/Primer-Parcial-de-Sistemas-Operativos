@@ -3,12 +3,12 @@
 #include <string.h>
 #include <netdb.h>
 #include <netinet/in.h>
+#include <unistd.h> 
 #include <sys/socket.h>
 #include <sys/types.h>
-#include <arpa/inet.h>
-#include <unistd.h> 
+#include <arpa/inet.h> 
 #include "clientLibrary.h"
-#include "../datastructures/dsstring.h"
+#include "dsstring.h"
 
 
 void cl_toUpper(char* string){

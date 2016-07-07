@@ -2,6 +2,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h> 
 #include <sys/socket.h>    //socket
 #include <arpa/inet.h> //inet_addr
 #include "clientLibrary.h"
@@ -27,8 +28,23 @@ int main(int argc , char *argv[]){
     	return 0;
     }
     key = dsStringNew();
+    if(!key){
+    	printf("No hay suficiente memoria en su sistema, se cierra");
+    	close(sock);
+    	return 0;
+    }
     value = dsStringNew();
+    if(!value){
+    	printf("No hay suficiente memoria en su sistema, se cierra");
+    	close(sock);
+    	return 0;
+    }
 	char* command = (char*)malloc(sizeof(char)*(MAX_COMMAND_LENGTH+ 1));
+	if(!command){
+		printf("No hay suficiente memoria en su sistema, se cierra");
+		close(sock);
+    	return 0;
+	}
 
 	while(1){
 		printf("\nCommand$: ");
@@ -40,7 +56,15 @@ int main(int argc , char *argv[]){
 	        
 	        key = dsStringNew();
 	        value = dsStringNew();
-	    	continue;
+
+	        if(!key){
+	        	continue;
+	        }
+	        if(!value){
+	        	continue;
+	        }
+
+	    	
 	    }
 	    val=cl_exec(sock,command, key, value);
 	    if(val==-1){

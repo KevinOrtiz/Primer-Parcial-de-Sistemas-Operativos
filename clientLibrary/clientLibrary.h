@@ -1,5 +1,5 @@
 #ifndef HEADER_FILE
-#include "../datastructures/dsstring.h"
+#include "dsstring.h"
 #include "constants.h"
 
 void cl_printHelp();
