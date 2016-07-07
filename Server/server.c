@@ -8,12 +8,12 @@
 #include "constants.h"
 #include "bstrlib.h"
 #include "Hash.h"
-#include "../datastructures/dsstring.h"
+#include "dsstring.h"
 
-#define workNumbers 2
-#define MAX 5
+#define workNumbers 15
+#define MAX 15
 
-//compilar gcc -o server server.c Hash.c bstrlib.c darray.c ../datastructures/dsstring.c ../datastructures/dschunk.c
+//gcc -o server server.c Hash.c bstrlib.c darray.c dsstring.c dschunk.c
 //ejecutar: ./server
 
 int conectionTaking = 0; //numero de conexiones atendidas
@@ -128,23 +128,15 @@ int getResultList(int socket){
 	HashmapNode *n;
 	char server_reply[10];
 	int read_size;
-	//response=DArray_create(sizeof(dsString*),DEFAULT_EXPAND_RATE);
-	printf("*****RESULTADOS DEL LIST*****\n");
 	for (int i = 0; i < DEFAULT_NUMBER_OF_BUCKETS; ++i){
-		//printf("i:%d\n",i );
 		bucket=DArray_get(array,i);
 		if(!bucket)
 			continue;
 		for (int j = 0; j < bucket->end; ++j){
-			//printf("j:%d\n",j );
 			n=DArray_get(bucket,j);
 			if(!n)
 				break;
-			//printf("\ncubeta: %d, pos: %d, Key: ",i,j);
-			printf("key: ");
-			dsStringPrint(n->key);
 			dsStringSendChunkSocket(n->key,socket);
-			//DArray_push(response,n->key);
 		}
 	}
 	pthread_mutex_unlock(&mutexHash);
@@ -203,14 +195,13 @@ int exec(int socket,char * command, dsString* key, dsString* value){
 	if(!command)
 		return WRONG_ARGUMENT;
 	if(strcmp(command,"GET")==0){
-        printf("Se ejecuta get\n");
 
         pthread_mutex_lock(&mutexHash); //bloquear
         value = (dsString *)Hashmap_get(map, key);
         pthread_mutex_unlock(&mutexHash); //desbloquear
 
         if(value){
-        	dsStringPrint(value);
+        	//dsStringPrint(value);
         	return dsStringSendChunkSocket(value,socket);	
         }
         if( send(socket , "<<<fin_cadena>>>" , strlen("<<<fin_cadena>>>") , 0) < 0) return -1;
@@ -222,7 +213,6 @@ int exec(int socket,char * command, dsString* key, dsString* value){
       	return SUCCESS; 
     }
     if(strcmp(command,"SET")==0){
-    	printf("Se ejecuta set\n");
     	
     	pthread_mutex_lock(&mutexHash); //bloquear 
     	int result = Hashmap_set(map, key, value);
@@ -237,19 +227,16 @@ int exec(int socket,char * command, dsString* key, dsString* value){
         return SUCCESS; 
     }
     if(strcmp(command,"LIST")==0){
-    	printf("Se ejecuta list\n");
     	return getResultList(socket);
     }
     if(strcmp(command,"DEL")==0){
-    	printf("se ejecuta del\n");
 
     	pthread_mutex_lock(&mutexHash); //bloquear
     	value = Hashmap_delete(map,key);
     	pthread_mutex_unlock(&mutexHash); //desbloquear
 
     	if(value){
-    		printf("Se ha eliminado este valor:\n");
-    		dsStringPrint(value);
+    		//dsStringPrint(value);
     		dsStringDelete(&value); //eliminado
     	}
     	if( send(socket , "OK" , strlen("OK") , 0) < 0) return -1;
@@ -285,7 +272,7 @@ void * worker(void* arg){
 				break;	
 			} 
 			send(socket , "OK" , strlen("OK"),0);
-			printf("\nsokect: %d, comando: %s\n", socket,command);
+			printf("\nCliente: %d, comando: %s\n", socket-3,command);
 			if(!strcmp(command,"EXIT")){
 				close(socket);
 				break;
@@ -294,20 +281,17 @@ void * worker(void* arg){
 			ban=1;
 			for(i=0;i<num;i++){
 				if(i==0){
-					printf("Key:");
 					ban=reciveAllChunks(socket,key);
 					if(ban!=1)
 						break;
 				}
 				if(i==1){
-					printf("Value:");
 					ban=reciveAllChunks(socket,value);
 					if(ban!=1)
 						break;
 				}
 			}
 			if(ban!=1){
-				printf("este es el problema\n");
 				break;
 			}
 			exec(socket,command,key,value);
@@ -318,7 +302,7 @@ void * worker(void* arg){
 		pthread_mutex_lock(&mutex);
 		conectionTaking--; // libero este worker
 		pthread_mutex_unlock(&mutex);
-		printf("Se Desconecto sokect: %d\n", socket);
+		printf("Se Desconecto Cliente: %d\n", socket-3);
 	}
 
 	return NULL;

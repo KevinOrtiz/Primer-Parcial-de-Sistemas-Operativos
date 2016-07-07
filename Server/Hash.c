@@ -103,7 +103,6 @@ static inline DArray *Hashmap_find_bucket(Hashmap * map, void *key,
 {
     uint32_t hash = map->hash(key);
     int bucket_n = hash % DEFAULT_NUMBER_OF_BUCKETS;
-    printf("El indice de hash %d\n",bucket_n);
     check(bucket_n >= 0, "Invalid bucket found: %d", bucket_n);
     // store it for the return so the caller can use it
     *hash_out = hash;
@@ -151,12 +150,10 @@ int Hashmap_set(Hashmap * map, void *key, void *data)
     HashmapNode *node = Hashmap_node_create(hash, key, data);
     check_mem(node);
     if(i==-1){
-        printf("pilas es nuevo\n");
         DArray_push(bucket, node);
         return 0;
     }
     else{
-        printf("pilas NO es nuevo\n");
         bucket->contents[i] = node;
 
         return 0;
@@ -190,7 +187,6 @@ void *Hashmap_get(Hashmap * map, void *key)
     return node->data;
 
 error:			// fallthrough
-    printf("NULL 3\n");
     return NULL;
 }
 
