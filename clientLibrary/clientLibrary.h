@@ -20,8 +20,8 @@ int cl_disconnect(int socket);
 
 void cl_help();
 
-void sendKey(int sock,dsString* key);
-void sendKeyValue(int sock,dsString* key,dsString* value);
+int sendKey(int sock,dsString* key);
+int sendKeyValue(int sock,dsString* key,dsString* value);
 
 
 #endif

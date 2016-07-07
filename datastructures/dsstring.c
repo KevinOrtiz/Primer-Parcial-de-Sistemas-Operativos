@@ -127,15 +127,22 @@ int dsStringSendChunkSocket(dsString *s,int sock){
         if(!strcmp(aux,""))
             break;
         if( send(sock , aux , strlen(aux) , 0) < 0){
-            return 0;
+            return -1;
         }
         read_size = recv(sock , server_reply , 1000 , 0);
-        //printf("\nenvie: %s",aux);
+        server_reply[read_size]='\0';
+        if(strcmp(server_reply,"OK")){
+            return -1;
+        }
     }
     if( send(sock , "<<<fin_cadena>>>" , strlen("<<<fin_cadena>>>") , 0) < 0)
-        return 0;
+        return -1;
     read_size = recv(sock , server_reply , 1000 , 0);
-    return 1;
+    server_reply[read_size]='\0';
+    if(strcmp(server_reply,"OK")){
+        return -1;
+    }
+    return 0;
 
 }
 
