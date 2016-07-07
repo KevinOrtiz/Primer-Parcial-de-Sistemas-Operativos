@@ -396,20 +396,33 @@ int cl_disconnect(int socket){
 }
 
 int reciveResponse(char* command,int sock){
+    char server_reply[10];
+    int read_size;
     if(strcmp(command,"GET")==0){
-        printf("\nValue:");
+        printf("Value: ");
         return reciveAllChunksPrint(sock);
     }
     if(strcmp(command,"SET")==0){
-        //printf("El comando es SET\n");
+        read_size = recv(sock , server_reply , 10 , 0);
+        server_reply[read_size]='\0';
+        if(strcmp(server_reply,"OK")){
+            return -1;
+        }
+        printf("########CONFIRMARION: %s\n",server_reply );
         return 1; //necesitan dos paramentros
     }
     if(strcmp(command,"LIST")==0){
-        //printf("El comando es LIST\n");
+        
         return 1; //no se necesitan paramentros
     }
     if(strcmp(command,"DEL")==0){
         //printf("El comando es DEL\n");
+        read_size = recv(sock , server_reply , 10 , 0);
+        server_reply[read_size]='\0';
+        if(strcmp(server_reply,"OK")){
+            return -1;
+        }
+        printf("########CONFIRMARION: %s\n",server_reply );
         return 1; //necesita un solo paramentro
     }
     return 1;
