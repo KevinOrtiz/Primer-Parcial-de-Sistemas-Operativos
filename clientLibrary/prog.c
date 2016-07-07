@@ -48,11 +48,13 @@ int main(int argc , char *argv[]){
 	    	printf("key: ");
 		    dsStringPrint(key);
 	    }
-
+	    reciveResponse(command,sock);
+	    /*
 		if(!dsStringEmpty(value)){
 			printf("value: ");
 			dsStringPrint(value);
-		} 	
+		} 
+		*/	
 
 	    
 	    dsStringDelete(&key);

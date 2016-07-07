@@ -163,5 +163,46 @@ int dsStringCmp(void *a, void *b)
     return 0;//son iguales
 }
 
+int reciveAllChunks(int socket,dsString *s){
+    int read_size;
+    char *chunk;
+    while(1){//recibe todo los chunk de de clave o valor
+        chunk=(char*)malloc(sizeof(char)*(CHUNK_LENGTH+1));
+        read_size = recv(socket , chunk , CHUNK_LENGTH+1, 0);
+        if(read_size>0) 
+            chunk[read_size]='\0';
+        else{
+            send(socket , "ERROR" , strlen("ERROR"),0);
+            return -1;
+        }
+        send(socket , "OK" , strlen("OK"),0);
+        if(!strcmp(chunk,"<<<fin_cadena>>>"))
+            break;
+        //printf("%s",chunk );
+        dsStringAdd(s,chunk);
+        fflush(stdout);
+    }
+    dsStringPrint(s);
+    return 1;
+}
 
+int reciveAllChunksPrint(int socket){
+    int read_size;
+    char chunk[CHUNK_LENGTH+1];
+    while(1){//recibe todo los chunk de de clave o valor
+        read_size = recv(socket , chunk , CHUNK_LENGTH+1, 0);
+        if(read_size>0) 
+            chunk[read_size]='\0';
+        else{
+            send(socket , "ERROR" , strlen("ERROR"),0);
+            return -1;
+        }
+        send(socket , "OK" , strlen("OK"),0);
+        if(!strcmp(chunk,"<<<fin_cadena>>>"))
+            break;
+        printf("%s",chunk);
+        fflush(stdout);
+    }
+    return 1;
+}
 

@@ -39,7 +39,6 @@ void putNewSocket(int s);
 int getNewSocket();
 void* worker(void* arg);
 int initServerSocket(int* socket_desc, int port);
-int reciveAllChunks(int socket,dsString *s);
 int exec(int socket,char * command, dsString* key, dsString* value);
 void getResultList(int socket);
 
@@ -179,28 +178,9 @@ int getNewSocket(){
 	count--;
 	return x;
 }
-int reciveAllChunks(int socket,dsString *s){
-	int read_size;
-	char *chunk;
-	while(1){//recibe todo los chunk de de clave o valor
-		chunk=(char*)malloc(sizeof(char)*(CHUNK_LENGTH+1));
-		read_size = recv(socket , chunk , CHUNK_LENGTH+1, 0);
-		if(read_size>0) 
-			chunk[read_size]='\0';
-		else{
-			send(socket , "ERROR" , strlen("ERROR"),0);
-			return -1;
-		}
-		send(socket , "OK" , strlen("OK"),0);
-		if(!strcmp(chunk,"<<<fin_cadena>>>"))
-			break;
-		//printf("%s",chunk );
-		dsStringAdd(s,chunk);
-		fflush(stdout);
-	}
-	dsStringPrint(s);
-	return 1;
-}
+
+
+
 
 int exec(int socket,char * command, dsString* key, dsString* value){
 	DArray *list;
@@ -213,6 +193,7 @@ int exec(int socket,char * command, dsString* key, dsString* value){
         if(value){
         	printf("Bien\n");
         	dsStringPrint(value);
+        	dsStringSendChunkSocket(value,socket);
         	return -1;
         }
         

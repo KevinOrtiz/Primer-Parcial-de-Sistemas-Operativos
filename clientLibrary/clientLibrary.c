@@ -394,3 +394,24 @@ int cl_disconnect(int socket){
     exit(0);
 
 }
+
+int reciveResponse(char* command,int sock){
+    if(strcmp(command,"GET")==0){
+        printf("\nValue:");
+        return reciveAllChunksPrint(sock);
+    }
+    if(strcmp(command,"SET")==0){
+        //printf("El comando es SET\n");
+        return 1; //necesitan dos paramentros
+    }
+    if(strcmp(command,"LIST")==0){
+        //printf("El comando es LIST\n");
+        return 1; //no se necesitan paramentros
+    }
+    if(strcmp(command,"DEL")==0){
+        //printf("El comando es DEL\n");
+        return 1; //necesita un solo paramentro
+    }
+    return 1;
+
+}

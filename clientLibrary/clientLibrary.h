@@ -22,6 +22,8 @@ void cl_help();
 
 int sendKey(int sock,dsString* key);
 int sendKeyValue(int sock,dsString* key,dsString* value);
+int reciveResponse(char* command,int sock);
+
 
 
 #endif
