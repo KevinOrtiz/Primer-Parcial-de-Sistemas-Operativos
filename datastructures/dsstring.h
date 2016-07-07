@@ -4,7 +4,7 @@
 #include "dschunk.h"
 
 
-#define CHUNK_LENGTH 20 //numero de bytes
+#define CHUNK_LENGTH 6000 //numero de bytes
 //data structure String
 typedef struct dsString{
     dsChunk *header, *last;

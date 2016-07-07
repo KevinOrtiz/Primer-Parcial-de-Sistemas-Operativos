@@ -41,6 +41,7 @@ void* worker(void* arg);
 int initServerSocket(int* socket_desc, int port);
 int reciveAllChunks(int socket,dsString *s);
 int exec(int socket,char * command, dsString* key, dsString* value);
+DArray* getResultList();
 
 int main(int argc , char *argv[]){
 
@@ -118,6 +119,30 @@ int main(int argc , char *argv[]){
 
 }
 
+DArray* getResultList(){
+	DArray *array,*bucket;
+	DArray *response;
+	array=map->buckets;
+	HashmapNode *n;
+	response=DArray_create(sizeof(dsString*),DEFAULT_EXPAND_RATE);
+	printf("*****RESULTADOS DEL LIST*****\n");
+	for (int i = 0; i < DEFAULT_NUMBER_OF_BUCKETS; ++i){
+		//printf("i:%d\n",i );
+		bucket=DArray_get(array,i);
+		if(!bucket)
+			continue;
+		for (int j = 0; j < bucket->end; ++j){
+			//printf("j:%d\n",j );
+			n=DArray_get(bucket,j);
+			if(!n)
+				break;
+			//printf("\ncubeta: %d, pos: %d, Key: ",i,j);
+			DArray_push(response,n->key);
+		}
+	}
+	return response;
+}
+
 int commandNumArguments(char* command){
     if(strcmp(command,"GET")==0){
         return 1; //necesita un solo paramentro
@@ -177,7 +202,7 @@ int reciveAllChunks(int socket,dsString *s){
 }
 
 int exec(int socket,char * command, dsString* key, dsString* value){
-
+	DArray *list;
 	if(!command)
 		return WRONG_ARGUMENT;
 	if(strcmp(command,"GET")==0){
@@ -203,6 +228,15 @@ int exec(int socket,char * command, dsString* key, dsString* value){
         return SUCCESS; //necesitan dos paramentros
     }
     if(strcmp(command,"LIST")==0){
+    	list=getResultList();
+    	dsString *k;
+    	for (int i = 0; i < list->end; i++){
+			//printf("j:%d\n",j );
+			k=DArray_get(list,i);
+			printf("key: ");
+			dsStringPrint(k);
+
+		}
     	printf("Se ejecuta list\n");
         return 0; //no se necesitan paramentros
     }
@@ -245,6 +279,7 @@ void * worker(void* arg){
 				break;
 			}
 			int num=commandNumArguments(command);
+			ban=1;
 			for(i=0;i<num;i++){
 				if(i==0){
 					printf("Key:");
@@ -259,8 +294,10 @@ void * worker(void* arg){
 						break;
 				}
 			}
-			if(ban!=1)
+			if(ban!=1){
+				printf("este es el problema\n");
 				break;
+			}
 			exec(socket,command,key,value);
 			printf("PILAS\n");
 

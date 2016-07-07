@@ -113,7 +113,7 @@ static inline DArray *Hashmap_find_bucket(Hashmap * map, void *key,
     if (!bucket && create) {
         // new bucket, set it up
         bucket = DArray_create(
-                sizeof(void *), DEFAULT_NUMBER_OF_BUCKETS);
+                sizeof(void *), DEFAULT_EXPAND_RATE);
         check_mem(bucket);
         DArray_set(map->buckets, bucket_n, bucket);
     }
