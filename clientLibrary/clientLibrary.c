@@ -213,13 +213,16 @@ void cl_printError(int errorCode){
             break;
     }
 }
-void sendKey(int sock,dsString* key){
-    dsStringSendChunkSocket(key,sock);
+int sendKey(int sock,dsString* key){
+    return dsStringSendChunkSocket(key,sock);
 }
 
-void sendKeyValue(int sock,dsString* key,dsString* value){
-    dsStringSendChunkSocket(key,sock);
-    dsStringSendChunkSocket(value,sock);
+int sendKeyValue(int sock,dsString* key,dsString* value){
+    int ban;
+    ban=dsStringSendChunkSocket(key,sock);
+    if(ban!=SUCCESS)
+        return ban;
+    return dsStringSendChunkSocket(value,sock);
 }
 
 int cl_exec(int sock,char* command, dsString* key, dsString* value){
@@ -230,18 +233,15 @@ int cl_exec(int sock,char* command, dsString* key, dsString* value){
     }
     if(strcmp(command,"GET")==0){
         printf("se ejecuta GET\n");
-        cl_get(sock,key);
-        return SUCCESS;
+        return cl_get(sock,key);
     }
     if(strcmp(command,"SET")==0){
         printf("se ejecuta SET\n");
-        cl_set(sock,key,value);
-        return SUCCESS; 
+        return cl_set(sock,key,value);
     }
     if(strcmp(command,"LIST")==0){
         printf("se ejecuta LIST\n");
-        cl_list(sock);
-        return SUCCESS; 
+        return cl_list(sock); 
     }
     if(strcmp(command,"DEL")==0){
         printf("se ejecuta DEL\n");
@@ -250,8 +250,7 @@ int cl_exec(int sock,char* command, dsString* key, dsString* value){
     }
     if(strcmp(command,"EXIT")==0){
         printf("se ejecuta EXIT\n");
-        cl_disconnect(sock);
-        return SUCCESS; 
+        return cl_disconnect(sock); 
     }
     return -1; 
 }
@@ -302,10 +301,11 @@ int cl_get(int socket,dsString* key){
     if( send(socket , "GET", strlen("GET") , 0) < 0) 
         return -1;
     read_size = recv(socket , server_reply , 10 , 0);
+    server_reply[read_size]='\0';
+    if(strcmp(server_reply,"OK"))
+        return -1;
     printf("Envie el Comando a el servidor: GET\n");
-    sendKey(socket,key);
-
-    return 1;
+    return sendKey(socket,key);
 }
 
 int cl_set(int socket,dsString* key,dsString* value){
@@ -315,11 +315,11 @@ int cl_set(int socket,dsString* key,dsString* value){
     if( send(socket , "SET", strlen("SET") , 0) < 0) 
         return -1;
     read_size = recv(socket , server_reply , 10 , 0);
+    server_reply[read_size]='\0';
+    if(strcmp(server_reply,"OK"))
+        return -1;
     printf("Envie el Comando a el servidor: SET\n");
-    sendKeyValue(socket,key,value);
-
-
-    return 1;
+    return sendKeyValue(socket,key,value);
 }
 
 int cl_list(int socket){
@@ -329,9 +329,12 @@ int cl_list(int socket){
     if( send(socket , "LIST", strlen("LIST") , 0) < 0) 
         return -1;
     read_size = recv(socket , server_reply , 10 , 0);
+    server_reply[read_size]='\0';
+    if(strcmp(server_reply,"OK"))
+        return -1;
     printf("Envie el Comando a el servidor: LIST\n");
    
-    return 1;
+    return SUCCESS;
 }
 
 
@@ -340,11 +343,13 @@ int cl_del(int socket,dsString* key){
     int read_size;
     
     if( send(socket , "DEL", strlen("DEL") , 0) < 0) 
-        return -1;
+        return SUCCESS;
     read_size = recv(socket , server_reply , 10 , 0);
+    server_reply[read_size]='\0';
+    if(strcmp(server_reply,"OK"))
+        return -1;
     printf("Envie el Comando a el servidor: DEL\n");
-    sendKey(socket,key);
-    return 1;
+    return sendKey(socket,key);
 
 }
 
@@ -367,6 +372,7 @@ int cl_disconnect(int socket){
     if( send(socket , "EXIT", strlen("EXIT") , 0) < 0) 
         return -1;
     read_size = recv(socket , server_reply , 10 , 0);
+    server_reply[read_size]='\0';
 	
     //int valor ;
     /*

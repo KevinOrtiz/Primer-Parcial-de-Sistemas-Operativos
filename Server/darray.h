@@ -39,7 +39,7 @@ void DArray_clear_destroy(DArray * array);
 #define DArray_count(A) DArray_end(A)
 #define DArray_max(A) ((A)->max)
 
-#define DEFAULT_EXPAND_RATE 300
+#define DEFAULT_EXPAND_RATE 10
 
 static inline void DArray_set(DArray * array, int i, void *el)
 {
