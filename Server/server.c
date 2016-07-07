@@ -248,7 +248,7 @@ int exec(int socket,char * command, dsString* key, dsString* value){
 
 
 void * worker(void* arg){
-	int socket,read_size, i,ban;
+	int socket,read_size, i,ban,val;
 	char command[10];
 	dsString *key,*value;
 	while(1) {
@@ -294,7 +294,12 @@ void * worker(void* arg){
 			if(ban!=1){
 				break;
 			}
-			exec(socket,command,key,value);
+			 val=exec(socket,command,key,value);
+			 if(val==-1){
+			 	printf("ERROR: problemas de socket\n");
+			 	close(socket);
+			 	break;
+			 }
 
 		}
 		
