@@ -1,9 +1,12 @@
 Proyecto de Sistemas operativos Primer Parcial
 
-+Oswaldo Bayona
-+Christian Pisco
-+Kevin Ortiz
-+Jorge Vergara
+Oswaldo Bayona
+
+Christian Pisco
+
+Kevin Ortiz
+
+Jorge Vergara
 
 1. En la carpeta Server esta el programa servidor que usa un pool de hilos
     
