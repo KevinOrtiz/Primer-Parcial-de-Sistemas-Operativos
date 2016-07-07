@@ -11,6 +11,7 @@ Jorge Vergara
 1. En la carpeta Server esta el programa servidor que usa un pool de hilos
     
     Para compilar se debe entrar en esa carpeta y hacer $make 
+    
     Para ejecutar: $./server puerto
     
     
@@ -18,6 +19,7 @@ Jorge Vergara
 la libreria
 
     Para compilar se debe entrar en esa carpeta y hacer $make 
+    
     Para ejecutar: $./cliente ip puerto
     
     
