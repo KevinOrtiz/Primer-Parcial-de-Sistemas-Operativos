@@ -242,6 +242,13 @@ int exec(int socket,char * command, dsString* key, dsString* value){
     }
     if(strcmp(command,"DEL")==0){
     	printf("se ejecuta del\n");
+    	value = Hashmap_delete(map,key);
+    	if(value){
+    		printf("Se ha eliminado este valor:\n");
+    		dsStringPrint(value);
+    		dsStringDelete(&value); //eliminado
+    	}
+
         return 1; //necesita un solo paramentro
     }
 	return WRONG_ARGUMENT;
