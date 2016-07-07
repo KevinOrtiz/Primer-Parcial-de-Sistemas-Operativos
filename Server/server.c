@@ -32,6 +32,8 @@ Hashmap *map;
 pthread_cond_t newConection_cv = PTHREAD_COND_INITIALIZER;
 //mutex
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutexHash = PTHREAD_MUTEX_INITIALIZER;
+
 
 static uint32_t Hashmap_djb2_hash(void *data); //funcion de hash
 int commandNumArguments(char* command);
@@ -201,7 +203,10 @@ int exec(int socket,char * command, dsString* key, dsString* value){
 	if(strcmp(command,"GET")==0){
         printf("Se ejecuta get\n");
 
+        pthread_mutex_lock(&mutexHash); //bloquear
         value = (dsString *)Hashmap_get(map, key);
+        pthread_mutex_unlock(&mutexHash); //desbloquear
+        
         if(value){
         	dsStringPrint(value);
         	return dsStringSendChunkSocket(value,socket);	
@@ -216,7 +221,10 @@ int exec(int socket,char * command, dsString* key, dsString* value){
     }
     if(strcmp(command,"SET")==0){
     	printf("Se ejecuta set\n");
+    	
+    	pthread_mutex_lock(&mutexHash); //bloquear 
     	int result = Hashmap_set(map, key, value);
+    	pthread_mutex_unlock(&mutexHash); //desbloquear
     
     	if(result<0){
     		return INSUFFICIENT_MEMORY;
@@ -232,7 +240,11 @@ int exec(int socket,char * command, dsString* key, dsString* value){
     }
     if(strcmp(command,"DEL")==0){
     	printf("se ejecuta del\n");
+
+    	pthread_mutex_lock(&mutexHash); //bloquear
     	value = Hashmap_delete(map,key);
+    	pthread_mutex_unlock(&mutexHash); //desbloquear
+
     	if(value){
     		printf("Se ha eliminado este valor:\n");
     		dsStringPrint(value);
