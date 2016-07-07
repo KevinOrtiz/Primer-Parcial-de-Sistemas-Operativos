@@ -123,6 +123,7 @@ int main(int argc , char *argv[]){
 int getResultList(int socket){
 	DArray *array,*bucket;
 	//DArray *response;
+	pthread_mutex_lock(&mutexHash);
 	array=map->buckets;
 	HashmapNode *n;
 	char server_reply[10];
@@ -146,6 +147,7 @@ int getResultList(int socket){
 			//DArray_push(response,n->key);
 		}
 	}
+	pthread_mutex_unlock(&mutexHash);
 	if( send(socket , "<<<fin_keys>>>" , strlen("<<<fin_keys>>>") , 0) < 0) return -1;
 	read_size = recv(socket , server_reply , 2 , 0);
     server_reply[read_size]='\0';
@@ -206,7 +208,7 @@ int exec(int socket,char * command, dsString* key, dsString* value){
         pthread_mutex_lock(&mutexHash); //bloquear
         value = (dsString *)Hashmap_get(map, key);
         pthread_mutex_unlock(&mutexHash); //desbloquear
-        
+
         if(value){
         	dsStringPrint(value);
         	return dsStringSendChunkSocket(value,socket);	
