@@ -56,14 +56,7 @@ int main(int argc , char *argv[]){
 	        
 	        key = dsStringNew();
 	        value = dsStringNew();
-
-	        if(!key){
-	        	continue;
-	        }
-	        if(!value){
-	        	continue;
-	        }
-
+	        continue;
 	    	
 	    }
 	    val=cl_exec(sock,command, key, value);
