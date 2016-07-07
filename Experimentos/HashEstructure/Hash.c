@@ -131,12 +131,21 @@ int Hashmap_set(Hashmap * map, void *key, void *data)
     DArray *bucket = Hashmap_find_bucket(map, key, 1, &hash);
     check(bucket, "Error can't create bucket.");
 
+    int i = Hashmap_get_node(map, hash, bucket, key);
     HashmapNode *node = Hashmap_node_create(hash, key, data);
     check_mem(node);
+    if(i==-1){
+        printf("pilas es nuevo\n");
+        DArray_push(bucket, node);
+        return 0;
+    }
+    else{
+        printf("pilas NO es nuevo\n");
+        array->contents[i] = node;
 
-    DArray_push(bucket, node);
-
-    return 0;
+        return 0;
+    }
+    
 
 error:
     return -1;
