@@ -129,7 +129,7 @@ int dsStringSendChunkSocket(dsString *s,int sock){
         if( send(sock , aux , strlen(aux) , 0) < 0){
             return -1;
         }
-        read_size = recv(sock , server_reply , 1000 , 0);
+        read_size = recv(sock , server_reply , 10 , 0);
         server_reply[read_size]='\0';
         if(strcmp(server_reply,"OK")){
             return -1;
@@ -137,7 +137,7 @@ int dsStringSendChunkSocket(dsString *s,int sock){
     }
     if( send(sock , "<<<fin_cadena>>>" , strlen("<<<fin_cadena>>>") , 0) < 0)
         return -1;
-    read_size = recv(sock , server_reply , 1000 , 0);
+    read_size = recv(sock , server_reply , 10 , 0);
     server_reply[read_size]='\0';
     if(strcmp(server_reply,"OK")){
         return -1;
@@ -189,6 +189,7 @@ int reciveAllChunks(int socket,dsString *s){
 int reciveAllChunksPrint(int socket){
     int read_size;
     char chunk[CHUNK_LENGTH+1];
+    int i=0;
     while(1){//recibe todo los chunk de de clave o valor
         read_size = recv(socket , chunk , CHUNK_LENGTH+1, 0);
         if(read_size>0) 
@@ -202,6 +203,11 @@ int reciveAllChunksPrint(int socket){
             break;
         printf("%s",chunk);
         fflush(stdout);
+        i++;
+    }
+    if(i==0){
+      printf("no hay valor\n");
+      return -1; 
     }
     return 1;
 }

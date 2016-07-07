@@ -191,13 +191,11 @@ int exec(int socket,char * command, dsString* key, dsString* value){
 
         value = (dsString *)Hashmap_get(map, key);
         if(value){
-        	printf("Bien\n");
         	dsStringPrint(value);
-        	dsStringSendChunkSocket(value,socket);
-        	return -1;
+        	return dsStringSendChunkSocket(value,socket);	
         }
-        
-        return 1; //necesita un solo paramentro
+        if( send(socket , "<<<fin_cadena>>>" , strlen("<<<fin_cadena>>>") , 0) < 0) return -1;
+      	return SUCCESS; 
     }
     if(strcmp(command,"SET")==0){
     	printf("Se ejecuta set\n");
@@ -205,14 +203,16 @@ int exec(int socket,char * command, dsString* key, dsString* value){
     
     	if(result<0){
     		return INSUFFICIENT_MEMORY;
+    		if( send(socket , "ERROR" , strlen("ERROR") , 0) < 0) return -1;
     	}
+    	if( send(socket , "OK" , strlen("OK") , 0) < 0) return -1;
 
-        return SUCCESS; //necesitan dos paramentros
+        return SUCCESS; 
     }
     if(strcmp(command,"LIST")==0){
     	getResultList(socket);
     	printf("Se ejecuta list\n");
-        return 0; //no se necesitan paramentros
+        return SUCCESS; 
     }
     if(strcmp(command,"DEL")==0){
     	printf("se ejecuta del\n");
@@ -222,8 +222,9 @@ int exec(int socket,char * command, dsString* key, dsString* value){
     		dsStringPrint(value);
     		dsStringDelete(&value); //eliminado
     	}
+    	if( send(socket , "OK" , strlen("OK") , 0) < 0) return -1;
 
-        return 1; //necesita un solo paramentro
+        return SUCCESS; 
     }
 	return WRONG_ARGUMENT;
 }
