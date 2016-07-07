@@ -1,0 +1,7 @@
+        Set      abcdefghijklmnopqrstuvwxyz        zyxwvutsrqpomnlkjihgfedcba
+SET     1234567890123456788901234567890  124816326412825651262510242048409680192
+list
+   exit
+
+
+

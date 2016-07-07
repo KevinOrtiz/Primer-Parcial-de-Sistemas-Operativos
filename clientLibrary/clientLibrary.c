@@ -134,7 +134,7 @@ int cl_inputString(FILE* fp, char* command, dsString* key, dsString* value){
         //leer el primer argumento y ponerlo en Key
         dsStringAddChar(value, ch);
         i = 1;
-        while(EOF!=(ch=fgetc(fp)) && ch!='\n' && ch!=' '){
+        while(EOF!=(ch=fgetc(fp)) && ch!='\n'){
             if(i > MAX_VALUE_LENGTH){
                 //limpiar buffer
                 while(EOF!=(ch=fgetc(fp)) && ch!='\n'); 
