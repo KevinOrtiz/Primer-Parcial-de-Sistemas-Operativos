@@ -1,8 +1,8 @@
 #ifndef HEADER_FILE
 
 #define MAX_COMMAND_LENGTH           4 //bytes
-#define MAX_KEY_LENGTH       128000000//bytes
-#define MAX_VALUE_LENGTH     2000000000//bytes
+#define MAX_KEY_LENGTH       134217728//bytes
+#define MAX_VALUE_LENGTH     2147483648//bytes
 
 typedef enum {
 	SUCCESS, //sin error 
