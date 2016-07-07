@@ -149,9 +149,35 @@ int cl_inputString(FILE* fp, char* command, dsString* key, dsString* value){
     }
 
     //limpia el buffer
+
+    if(numArgs == 1){
+        if(ch==EOF || ch == '\n')
+            return SUCCESS;
+
+        //limpia espacios
+        while(EOF!=(ch=fgetc(fp)) && ch!='\n'){
+            if(ch!=' ') break;
+        }
+
+        if(ch==EOF || ch == '\n'){
+            return SUCCESS;
+        }
+        else{
+            //limpiar buffer
+            while(EOF!=ch && ch!='\n'){
+                ch=fgetc(fp);
+             }
+             return WRONG_ARGUMENT;
+        }
+
+
+            
+
+    }
+
     while(EOF!=ch && ch!='\n'){
         ch=fgetc(fp);
-    };   
+    }   
 
     return SUCCESS;
 }
