@@ -145,7 +145,7 @@ int getResultList(int socket){
 		}
 	}
 	if( send(socket , "<<<fin_keys>>>" , strlen("<<<fin_keys>>>") , 0) < 0) return -1;
-	read_size = recv(socket , server_reply , 10 , 0);
+	read_size = recv(socket , server_reply , 2 , 0);
     server_reply[read_size]='\0';
     if(strcmp(server_reply,"OK")){
         return -1;
@@ -207,7 +207,7 @@ int exec(int socket,char * command, dsString* key, dsString* value){
         	return dsStringSendChunkSocket(value,socket);	
         }
         if( send(socket , "<<<fin_cadena>>>" , strlen("<<<fin_cadena>>>") , 0) < 0) return -1;
-        read_size = recv(socket , server_reply , 10 , 0);
+        read_size = recv(socket , server_reply , 2 , 0);
 	    server_reply[read_size]='\0';
 	    if(strcmp(server_reply,"OK")){
 	        return -1;
@@ -220,7 +220,7 @@ int exec(int socket,char * command, dsString* key, dsString* value){
     
     	if(result<0){
     		return INSUFFICIENT_MEMORY;
-    		if( send(socket , "ERROR" , strlen("ERROR") , 0) < 0) return -1;
+    		if( send(socket , "NK" , strlen("NK") , 0) < 0) return -1;
     	}
     	if( send(socket , "OK" , strlen("OK") , 0) < 0) return -1;
 
@@ -266,7 +266,7 @@ void * worker(void* arg){
 				command[read_size]='\0';	
 			} 
 			else{
-				send(socket , "ERROR" , strlen("ERROR"),0);
+				send(socket , "NK" , strlen("NK"),0);
 				close(socket);
 				break;	
 			} 

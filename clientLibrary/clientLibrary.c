@@ -300,7 +300,7 @@ int cl_get(int socket,dsString* key){
 
     if( send(socket , "GET", strlen("GET") , 0) < 0) 
         return -1;
-    read_size = recv(socket , server_reply , 10 , 0);
+    read_size = recv(socket , server_reply , 2 , 0);
     server_reply[read_size]='\0';
     if(strcmp(server_reply,"OK"))
         return -1;
@@ -314,7 +314,7 @@ int cl_set(int socket,dsString* key,dsString* value){
     
     if( send(socket , "SET", strlen("SET") , 0) < 0) 
         return -1;
-    read_size = recv(socket , server_reply , 10 , 0);
+    read_size = recv(socket , server_reply , 2 , 0);
     server_reply[read_size]='\0';
     if(strcmp(server_reply,"OK"))
         return -1;
@@ -328,8 +328,9 @@ int cl_list(int socket){
     
     if( send(socket , "LIST", strlen("LIST") , 0) < 0) 
         return -1;
-    read_size = recv(socket , server_reply , 10 , 0);
+    read_size = recv(socket , server_reply , 2 , 0);
     server_reply[read_size]='\0';
+    printf("****************%s\n", server_reply);
     if(strcmp(server_reply,"OK"))
         return -1;
     printf("Envie el Comando a el servidor: LIST\n");
@@ -344,7 +345,7 @@ int cl_del(int socket,dsString* key){
     
     if( send(socket , "DEL", strlen("DEL") , 0) < 0) 
         return SUCCESS;
-    read_size = recv(socket , server_reply , 10 , 0);
+    read_size = recv(socket , server_reply , 2 , 0);
     server_reply[read_size]='\0';
     if(strcmp(server_reply,"OK"))
         return -1;
@@ -371,7 +372,7 @@ int cl_disconnect(int socket){
 
     if( send(socket , "EXIT", strlen("EXIT") , 0) < 0) 
         return -1;
-    read_size = recv(socket , server_reply , 10 , 0);
+    read_size = recv(socket , server_reply , 2 , 0);
     server_reply[read_size]='\0';
 	
     //int valor ;
@@ -403,7 +404,7 @@ int reciveResponse(char* command,int sock){
         return reciveAllChunksPrint(sock);
     }
     if(strcmp(command,"SET")==0){
-        read_size = recv(sock , server_reply , 10 , 0);
+        read_size = recv(sock , server_reply , 2 , 0);
         server_reply[read_size]='\0';
         if(strcmp(server_reply,"OK")){
             return -1;
@@ -416,7 +417,7 @@ int reciveResponse(char* command,int sock){
     }
     if(strcmp(command,"DEL")==0){
         //printf("El comando es DEL\n");
-        read_size = recv(sock , server_reply , 10 , 0);
+        read_size = recv(sock , server_reply , 2 , 0);
         server_reply[read_size]='\0';
         if(strcmp(server_reply,"OK")){
             return -1;

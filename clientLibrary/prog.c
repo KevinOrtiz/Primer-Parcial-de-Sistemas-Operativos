@@ -36,11 +36,21 @@ int main(int argc , char *argv[]){
 	    int input = cl_inputString(stdin,command, key, value);
 	    if(input != SUCCESS){
 	    	cl_printError(input);
+	    	dsStringDelete(&key);
+	        dsStringDelete(&value);
+	        
+	        key = dsStringNew();
+	        value = dsStringNew();
 	    	continue;
 	    }
 	    val=cl_exec(sock,command, key, value);
 	    if(val==-1){
 	    	printf("\nERROR: No se pudo ejecutar el comando");
+	    	dsStringDelete(&key);
+	        dsStringDelete(&value);
+	        
+	        key = dsStringNew();
+	        value = dsStringNew();
 	    	continue;
 	    }
 	    ///imprime

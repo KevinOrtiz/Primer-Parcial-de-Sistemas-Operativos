@@ -129,7 +129,7 @@ int dsStringSendChunkSocket(dsString *s,int sock){
         if( send(sock , aux , strlen(aux) , 0) < 0){
             return -1;
         }
-        read_size = recv(sock , server_reply , 10 , 0);
+        read_size = recv(sock , server_reply , 2 , 0);
         server_reply[read_size]='\0';
         if(strcmp(server_reply,"OK")){
             return -1;
@@ -137,7 +137,7 @@ int dsStringSendChunkSocket(dsString *s,int sock){
     }
     if( send(sock , "<<<fin_cadena>>>" , strlen("<<<fin_cadena>>>") , 0) < 0)
         return -1;
-    read_size = recv(sock , server_reply , 10 , 0);
+    read_size = recv(sock , server_reply ,2 , 0);
     server_reply[read_size]='\0';
     if(strcmp(server_reply,"OK")){
         return -1;
@@ -172,7 +172,7 @@ int reciveAllChunks(int socket,dsString *s){
         if(read_size>0) 
             chunk[read_size]='\0';
         else{
-            send(socket , "ERROR" , strlen("ERROR"),0);
+            send(socket , "NK" , strlen("NK"),0);
             return -1;
         }
         send(socket , "OK" , strlen("OK"),0);
@@ -207,7 +207,7 @@ int reciveAllChunksPrint(int socket){
     }
     if(i==0){
       printf("no hay valor\n");
-      return -1; 
+      return 1; 
     }
     return 1;
 }
