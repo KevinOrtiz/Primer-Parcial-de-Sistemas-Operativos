@@ -151,6 +151,7 @@ int getResultList(int socket){
 
 int commandNumArguments(char* command){
     if(strcmp(command,"GET")==0){
+        printf("Metodo GET requiere un parametro\n");
         return 1; //necesita un solo paramentro
     }
     if(strcmp(command,"SET")==0){
